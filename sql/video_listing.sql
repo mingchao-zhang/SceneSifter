@@ -1,0 +1,12 @@
+CREATE EXTENSION IF NOT EXISTS vector;
+
+DROP TABLE IF EXISTS video_listing;
+
+
+CREATE TABLE video_listing (
+    id SERIAL PRIMARY KEY,
+    title TEXT,
+    Start_Timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    End_Timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    description TEXT
+);
