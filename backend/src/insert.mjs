@@ -82,7 +82,7 @@ async function insert(client, intervals) {
         value_string += sub_string
     }
     value_string = value_string.slice(0, -2);
-    let query_string = "SELECT * FROM video_listing"
+    let query_string = "INSERT INTO video_listing (video_name, start_time, end_time, description, description_embedding) VALUES \n" + value_string
     // execute the query string
     const res = await client.query(query_string);
     console.log(res)
