@@ -22,3 +22,9 @@
     ```
     docker exec -it postgres psql -U postgres -c '\i /home/video_listing.sql'
     ```
+
+
+### Vosk (STT model)
+Download a model (I tried with `vosk-model-en-us-0.22-lgraph`) from https://alphacephei.com/vosk/models and unpack as `stt_model` in the current folder.
+
+Consider integrating it into the docker image.
