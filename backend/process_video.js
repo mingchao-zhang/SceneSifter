@@ -1,12 +1,11 @@
 const { exec } = require('child_process');
 const fs = require('fs');
 
-const VIDEO_DIR = '../tmp/vid'
-const AUDIO_DIR = '../tmp/wav'
-const IMG_DIR = '../tmp/img'
+const VIDEO_DIR = './tmp/vid'
+const AUDIO_DIR = './tmp/wav'
+const IMG_DIR = './tmp/img'
 
 const SAMPLE_RATE = 16000;
-const BUFFER_SIZE = 4000;
 
 const runFFmpegCommand = (command) => new Promise((resolve, reject) => {
     exec(command, (error, stdout, stderr) => {
@@ -21,22 +20,8 @@ const runFFmpegCommand = (command) => new Promise((resolve, reject) => {
     });
 });
 
-const chunkVideo = async (inputFile, chunkDuration) => {
-    try {
-        const command = `ffmpeg -i ${inputFile} \
-    -c copy -map 0 \
-    -segment_time ${chunkDuration} -f segment \
-    ${VIDEO_DIR}/output_%03d.mp4`;
-
-        await runFFmpegCommand(command);
-        console.log('Video chunking completed.');
-    } catch (error) {
-        console.error('Failed to chunk video:', error);
-    }
-};
-
-const encodeTime = (chunkDuration) => {
-    const files = fs.readdirSync(VIDEO_DIR);
+const encodeTime = (dir = VIDEO_DIR, chunkDuration) => {
+    const files = fs.readdirSync(dir);
     files.forEach((file, index) => {
         console.log(file, index);
         let seconds = index * chunkDuration;
@@ -48,35 +33,42 @@ const encodeTime = (chunkDuration) => {
     });
 }
 
-const convertChunksToAudio = async () => {
+const chunkVideo = async (inputFile, outputDir = VIDEO_DIR, chunkDuration) => {
+    if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+    } else {
+        // TODO: empty the dir?
+    }
     try {
-        const files = fs.readdirSync(VIDEO_DIR);
-        for (const file of files) {
-            const outputFile = file.replace('.mp4', '.wav');
-            // convert to 16 bit:
-            const command = `ffmpeg -i ${VIDEO_DIR}/${file} \
-      -ar ${SAMPLE_RATE} \
-      -ac 1 \
-      -acodec pcm_s16le \
-      ${AUDIO_DIR}/${outputFile}`;
+        const command = `ffmpeg -i ${inputFile} \
+        -c copy -map 0 \
+        -segment_time ${chunkDuration} -f segment \
+        ${outputDir}/output_%03d.mp4`;
 
-            await runFFmpegCommand(command);
-            console.log(`Converted ${file} to audio.`);
-        }
+        await runFFmpegCommand(command);
+        encodeTime(chunkDuration);
+        console.log('Video chunking completed.');
     } catch (error) {
-        console.error('Failed to convert video chunks to audio:', error);
+        console.error('Failed to chunk video:', error);
     }
 };
 
-// Extract the first frame of each chunk
-// To extract more frames (e.g. at 0s & 5s):
-//  ffmpeg -i input_chunk.mp4 -vf 'select='eq(t,0)+eq(t,5)'' -vsync vfr output_frame_%02d.jpg
-const extractKeyFrames = async () => {
+/**
+ * Extract the first frame of each chunk.
+ * @param {string} inputDir - where the video segments live
+ * @param {string} outputDir
+ */
+const extractKeyFrames = async (inputDir = VIDEO_DIR, outputDir = IMG_DIR) => {
+    // To extract more frames (e.g. at 0s & 5s):
+    //  ffmpeg -i input_chunk.mp4 -vf 'select='eq(t,0)+eq(t,5)'' -vsync vfr output_frame_%02d.jpg
+    if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+    }
     try {
-        const files = fs.readdirSync(VIDEO_DIR);
+        const files = fs.readdirSync(inputDir);
         for (const file of files) {
             const outputFile = file.replace('.mp4', '_first_frame.jpg');
-            const command = `ffmpeg -i ${VIDEO_DIR}/${file} -frames:v 1 ${IMG_DIR}/${outputFile}`;
+            const command = `ffmpeg -i ${inputDir}/${file} -frames:v 1 ${outputDir}/${outputFile}`;
             await runFFmpegCommand(command);
             console.log(`Extracted key frame from ${file}.`);
         }
@@ -85,25 +77,32 @@ const extractKeyFrames = async () => {
     }
 };
 
-const processVideo = async (inputFile, chunkDuration) => {
-    if (!fs.existsSync(VIDEO_DIR)) {
-        fs.mkdirSync(VIDEO_DIR, { recursive: true });
-    } else {
-        // TODO: empty the dir?
+/**
+ * 
+ * @param {*} videoFile 
+ * @param {*} outputDir 
+ * @returns converted file name
+ */
+const extractMonoPCMWav = async (videoFile, outputDir = AUDIO_DIR) => {
+    if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
     }
-    if (!fs.existsSync(AUDIO_DIR)) {
-        fs.mkdirSync(AUDIO_DIR, { recursive: true });
-    }
-    if (!fs.existsSync(IMG_DIR)) {
-        fs.mkdirSync(IMG_DIR, { recursive: true });
-    }
+    try {
+        const outputFile = videoFile.replace('.mp4', '.wav');
+        // convert to 16 bit:
+        const command = `ffmpeg -i ${VIDEO_DIR}/${file} \
+        -ar ${SAMPLE_RATE} \
+        -ac 1 \
+        -acodec pcm_s16le \
+        ${outputDir}/${outputFile}`;
 
-    await chunkVideo(inputFile, chunkDuration);
-    encodeTime(chunkDuration);
-    await convertChunksToAudio();
-    await extractKeyFrames();
+        await runFFmpegCommand(command);
+        console.log(`Converted ${videoFile} to audio.`);
+        return `${outputDir}/${outputFile}`;
+    } catch (error) {
+        console.error('Failed to convert video to audio:', error);
+        return null;
+    }
 };
 
-// processVideo('grow_like_a_weed.mp4', 10);
-
-module.exports = processVideo;
+module.exports = { chunkVideo, extractKeyFrames, extractMonoPCMWav };
