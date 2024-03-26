@@ -1,5 +1,4 @@
 .DS_store
-node_modules/
-package-lock.json
-tmp/
-model/
+backend/node_modules/
+backend/package-lock.json
+backend/tmp/
