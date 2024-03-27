@@ -1,8 +1,8 @@
-const fs = require('fs');
-const vosk = require('vosk');
-const { Readable } = require('stream');
-const wav = require('wav');
-const pv = require('./process_video');
+import fs from 'fs';
+import Readable from 'stream';
+import wav from 'wav';
+import vosk from 'vosk';
+import * as pv from './process_video';
 
 const MODEL_PATH = 'model';
 
@@ -75,11 +75,11 @@ const speechToText = async (file, callback) => {
             words.push(...r);
         }
         rec.free();
-        console.log(words);
-        console.log("===============================");
+        // console.log(words);
+        // console.log("===============================");
         let sentences = groupWords(words, 0.5);
-        console.log(sentences);
-        // callback(sentences);
+        // console.log(sentences);
+        callback(sentences);
     });
 
     fs.createReadStream(file, { 'highWaterMark': 4096 }).pipe(wfReader).on('finish',
@@ -98,9 +98,7 @@ const stt = async (videoFile, callback) => {
     }
 
     const audioFile = await pv.extractMonoPCMWav(videoFile);
-    speechToText(audioFile, (res) => {
-        console.log(res);
-    });
+    speechToText(audioFile, callback);
 }
 
 // speechToText('mono.wav');
