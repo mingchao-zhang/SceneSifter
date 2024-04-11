@@ -67,7 +67,6 @@ const speechToText = async (file, callback) => {
                 let r = rec.result().result;
                 if (r != undefined) {
                     words.push(...r);
-                    // console.log(r);
                 }
             } else {
                 // console.log('par', JSON.stringify(rec.partialResult(), null, 4));
@@ -77,13 +76,9 @@ const speechToText = async (file, callback) => {
         let r = rec.finalResult().result;
         if (r != undefined) {
             words.push(...r);
-            // console.log(r);
         }
         rec.free();
-        // console.log(words);
-        // console.log("===============================");
         let sentences = groupWords(words, 0.5);
-        // console.log(sentences);
         callback(sentences);
     });
 
@@ -102,7 +97,7 @@ const stt = async (videoFile, callback) => {
 
     const audioFile = await pv.extractMonoPCMWav(videoFile);
     speechToText(audioFile, (res) => {
-        console.log(res);
+        callback(res)
     });
 }
 

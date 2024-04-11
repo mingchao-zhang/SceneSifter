@@ -3,7 +3,37 @@ import './App.css';
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [fileName, setFileName] = useState(''); // State to store the file name
+  const [fileName, setFileName] = useState(''); // State to store the selected file name
+  const [keywords, setKeywords] = useState('');
+
+
+  const handleKeywordsChange = (event) => {
+    setKeywords(event.target.value);
+  };
+
+  const handleQuery = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ keywords: keywords }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Video URL:', data.videoPath);
+        console.log('Timestamps:', data.timestamps);
+        console.log('Texts:', data.texts);
+      } else {
+        alert('Query failed');
+      }
+    } catch (error) {
+      console.error('Error during query', error);
+      alert('Error during query');
+    }
+  };
+
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -51,6 +81,13 @@ function App() {
         <button onClick={handleUpload}>Upload Video</button>
         {fileName && <p>Selected file: {fileName}</p>}
       </header>
+      <input
+          type="text"
+          placeholder="Enter keywords..."
+          value={keywords}
+          onChange={handleKeywordsChange}
+        />
+        <button onClick={handleQuery}>Search Videos</button>
     </div>
   );
 }
