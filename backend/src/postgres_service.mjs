@@ -162,7 +162,7 @@ await service.connect();
 await service.insert(testIntervals, ()=> {
     console.log("Inserted")
 });
-await service.search("random", 2, (intervals) => {
-    console.log("returned intervals: ", intervals);
+await service.search("This is the first video.", 2, (intervals) => {
+    console.log("Search results: ", intervals);
 });
 */
