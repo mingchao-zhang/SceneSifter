@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-app.use(cors()); // Enable CORS
+app.use(cors()); // Enable CORS. Without this, the frontend will get an err response
 
 app.post('/upload', upload.single('video'), (req, res) => {
   res.json({ message: 'Video uploaded successfully!' });

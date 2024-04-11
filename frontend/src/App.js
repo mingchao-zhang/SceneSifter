@@ -3,9 +3,17 @@ import './App.css';
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
+  const [fileName, setFileName] = useState(''); // State to store the file name
 
   const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      setFileName(file.name); // Update the file name state with the selected file's name
+    } else {
+      setSelectedFile(null);
+      setFileName('');
+    }
   };
 
   const handleUpload = async () => {
@@ -41,6 +49,7 @@ function App() {
       <header className="App-header">
         <input type="file" onChange={handleFileChange} accept="video/*" />
         <button onClick={handleUpload}>Upload Video</button>
+        {fileName && <p>Selected file: {fileName}</p>}
       </header>
     </div>
   );
