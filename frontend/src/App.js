@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './App.css';
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [fileName, setFileName] = useState(''); // State to store the selected file name
+  const [fileName, setFileName] = useState(''); // store the selected file name
   const [keywords, setKeywords] = useState('');
-
+  const [videoUrl, setVideoUrl] = useState(''); // store the video URL
+  const [timestamps, setTimestamps] = useState([]); // timestamps of the video
+  const [texts, setTexts] = useState([]); // corresponding texts of timestamps
+  const videoRef = useRef(null); // reference to the video player
 
   const handleKeywordsChange = (event) => {
     setKeywords(event.target.value);
@@ -22,9 +25,10 @@ function App() {
       });
       if (response.ok) {
         const data = await response.json();
-        console.log('Video URL:', data.videoPath);
-        console.log('Timestamps:', data.timestamps);
-        console.log('Texts:', data.texts);
+        console.log(data.videoPath)
+        setVideoUrl(data.videoPath); // Set video URL from the response
+        setTimestamps(data.timestamps); // Set timestamps from the response
+        setTexts(data.texts); // Set texts from the response
       } else {
         alert('Query failed');
       }
@@ -34,12 +38,11 @@ function App() {
     }
   };
 
-
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
-      setFileName(file.name); // Update the file name state with the selected file's name
+      setFileName(file.name);
     } else {
       setSelectedFile(null);
       setFileName('');
@@ -68,10 +71,16 @@ function App() {
         alert('Upload failed');
       }
     } catch (error) {
-      console.log("WHAT error: ", error)
       console.error('Error uploading the file', error);
       alert('Error uploading the file');
     }
+  };
+
+  const seekTo = (timeString) => {
+    const parts = timeString.split(':');
+    // parts = [h, m, s]
+    const totalTimeInSeconds = (+parts[0] * 3600) + (+parts[1] * 60) + (+parts[2]);
+    videoRef.current.currentTime = totalTimeInSeconds;
   };
 
   return (
@@ -80,6 +89,27 @@ function App() {
         <input type="file" onChange={handleFileChange} accept="video/*" />
         <button onClick={handleUpload}>Upload Video</button>
         {fileName && <p>Selected file: {fileName}</p>}
+        {videoUrl && (
+          <div>
+            <video ref={videoRef} width="640" controls>
+              <source src={videoUrl} type="video/mp4" />
+              The video element is not supported in this browser.
+            </video>
+            <ul>
+              {timestamps.map((timestamp, index) => (
+                <li key={index}>
+                  <a href="#" onClick={(e) => { 
+                    e.preventDefault(); 
+                    seekTo(timestamp);
+                    console.log(timestamp, videoUrl)
+                    }}>
+                    {timestamp} - {texts[index]}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </header>
       <input
           type="text"
