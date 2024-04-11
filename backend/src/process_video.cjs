@@ -90,15 +90,15 @@ const extractMonoPCMWav = async (videoFile, outputDir = AUDIO_DIR) => {
     try {
         const outputFile = videoFile.replace('.mp4', '.wav');
         // convert to 16 bit:
-        const command = `ffmpeg -i ${VIDEO_DIR}/${file} \
+        const command = `ffmpeg -i ${videoFile} \
         -ar ${SAMPLE_RATE} \
         -ac 1 \
         -acodec pcm_s16le \
-        ${outputDir}/${outputFile}`;
+        ${outputFile}`;
 
         await runFFmpegCommand(command);
         console.log(`Converted ${videoFile} to audio.`);
-        return `${outputDir}/${outputFile}`;
+        return `${outputFile}`;
     } catch (error) {
         console.error('Failed to convert video to audio:', error);
         return null;

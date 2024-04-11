@@ -67,6 +67,7 @@ const speechToText = async (file, callback) => {
                 let r = rec.result().result;
                 if (r != undefined) {
                     words.push(...r);
+                    // console.log(r);
                 }
             } else {
                 // console.log('par', JSON.stringify(rec.partialResult(), null, 4));
@@ -76,13 +77,14 @@ const speechToText = async (file, callback) => {
         let r = rec.finalResult().result;
         if (r != undefined) {
             words.push(...r);
+            // console.log(r);
         }
         rec.free();
-        console.log(words);
-        console.log("===============================");
+        // console.log(words);
+        // console.log("===============================");
         let sentences = groupWords(words, 0.5);
-        console.log(sentences);
-        // callback(sentences);
+        // console.log(sentences);
+        callback(sentences);
     });
 
     fs.createReadStream(file, { 'highWaterMark': 4096 }).pipe(wfReader).on('finish',
@@ -97,9 +99,6 @@ const stt = async (videoFile, callback) => {
         console.log('Please download the model from https://alphacephei.com/vosk/models and unpack as ' + MODEL_PATH + ' in the current folder.')
         process.exit()
     }
-    if (process.argv.length > 2) {
-        file = process.argv[2];
-    }
 
     const audioFile = await pv.extractMonoPCMWav(videoFile);
     speechToText(audioFile, (res) => {
@@ -107,7 +106,14 @@ const stt = async (videoFile, callback) => {
     });
 }
 
-// speechToText('mono.wav');
-// const videoPath = path.join(process.cwd(), 'test.mp4');
-// console.log(videoPath)
-// stt(videoPath, () => {})
+const videoPath = path.join(process.cwd(), '../example_videos/test.mp4');
+const outputPath = path.join(process.cwd(), '../test_output.txt');
+console.log(videoPath)
+
+fs.open(outputPath, 'w+', () => {
+    console.log('File created');
+    stt(videoPath, (sentences) => {
+        console.log('Finished');
+        fs.writeFileSync(outputPath, JSON.stringify(sentences));
+    })
+});
