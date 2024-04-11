@@ -90,25 +90,27 @@ const speechToText = async (file, callback) => {
 
 const stt = async (videoFile, callback) => {
     if (!fs.existsSync(MODEL_PATH)) {
-        console.log(MODEL_PATH, "HIII")
         console.log('Please download the model from https://alphacephei.com/vosk/models and unpack as ' + MODEL_PATH + ' in the current folder.')
         process.exit()
     }
 
     const audioFile = await pv.extractMonoPCMWav(videoFile);
     speechToText(audioFile, (res) => {
-        callback(res)
+        // remove the generated audioFile after getting the speech
+        fs.unlink(audioFile, (err) => {
+            if (err) {
+                callback(err)
+            } else {
+                callback(null, res)
+            }
+        });
     });
 }
 
-const videoPath = path.join(process.cwd(), '../example_videos/test.mp4');
-const outputPath = path.join(process.cwd(), '../test_output.txt');
+const videoPath = path.join(process.cwd(), 'uploaded_videos/test.mp4');
 console.log(videoPath)
 
-fs.open(outputPath, 'w+', () => {
-    console.log('File created');
-    stt(videoPath, (sentences) => {
-        console.log('Finished');
-        fs.writeFileSync(outputPath, JSON.stringify(sentences));
-    })
-});
+
+stt(videoPath, (err, sentences) => {
+    console.log(">>>", err, sentences)
+})
