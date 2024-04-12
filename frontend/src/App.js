@@ -79,6 +79,11 @@ function App() {
 
   return (
     <div className="App">
+      <div className="app-name">
+        Scenesifter
+        <div className="app-name-subtitle">A video search tool</div>
+      </div>
+
       <header className="App-header">
         <input type="file" onChange={handleFileChange} accept="video/*" />
         <button onClick={handleUpload}>Upload Video</button>
@@ -94,7 +99,7 @@ function App() {
       </header>
       {/* Display relevant videos */}
       {videoData.map((video, index) => (
-        <div key={index}>
+        <div key={index} className="video-item">
           <h2>{video.videoName}</h2>
           <video
             ref={(el) => videoRefs.current.set(video.videoName, el)}
