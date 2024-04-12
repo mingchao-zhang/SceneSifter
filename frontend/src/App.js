@@ -3,40 +3,10 @@ import './App.css';
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [fileName, setFileName] = useState(''); // store the selected file name
+  const [fileName, setFileName] = useState('');
+  const [videoData, setVideoData] = useState([]);
+  const videoRefs = useRef(new Map());
   const [keywords, setKeywords] = useState('');
-  const [videoUrl, setVideoUrl] = useState(''); // store the video URL
-  const [timestamps, setTimestamps] = useState([]); // timestamps of the video
-  const [texts, setTexts] = useState([]); // corresponding texts of timestamps
-  const videoRef = useRef(null); // reference to the video player
-
-  const handleKeywordsChange = (event) => {
-    setKeywords(event.target.value);
-  };
-
-  const handleQuery = async () => {
-    try {
-      const response = await fetch('http://localhost:5001/query', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ keywords: keywords }),
-      });
-      if (response.ok) {
-        const data = await response.json();
-        console.log(data.videoPath)
-        setVideoUrl(data.videoPath); // Set video URL from the response
-        setTimestamps(data.timestamps); // Set timestamps from the response
-        setTexts(data.texts); // Set texts from the response
-      } else {
-        alert('Query failed');
-      }
-    } catch (error) {
-      console.error('Error during query', error);
-      alert('Error during query');
-    }
-  };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -76,11 +46,35 @@ function App() {
     }
   };
 
-  const seekTo = (timeString) => {
-    const parts = timeString.split(':');
-    // parts = [h, m, s]
-    const totalTimeInSeconds = (+parts[0] * 3600) + (+parts[1] * 60) + (+parts[2]);
-    videoRef.current.currentTime = totalTimeInSeconds;
+  const handleKeywordsChange = (event) => {
+    setKeywords(event.target.value);
+  };
+
+  const handleQuery = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ keywords: keywords }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setVideoData(data.videos);
+        alert('Query succeeded');
+      }
+    } catch (error) {
+      console.error('Error during query', error);
+      alert('Error during query');
+    }
+  };
+
+  const seekTo = (videoName, startTime) => {
+    const video = videoRefs.current.get(videoName);
+    if (video) {
+      video.currentTime = startTime;
+    }
   };
 
   return (
@@ -89,35 +83,42 @@ function App() {
         <input type="file" onChange={handleFileChange} accept="video/*" />
         <button onClick={handleUpload}>Upload Video</button>
         {fileName && <p>Selected file: {fileName}</p>}
-        {videoUrl && (
-          <div>
-            <video ref={videoRef} width="640" controls>
-              <source src={videoUrl} type="video/mp4" />
-              The video element is not supported in this browser.
-            </video>
-            <ul>
-              {timestamps.map((timestamp, index) => (
-                <li key={index}>
-                  <a href="#" onClick={(e) => { 
-                    e.preventDefault(); 
-                    seekTo(timestamp);
-                    console.log(timestamp, videoUrl)
-                    }}>
-                    {timestamp} - {texts[index]}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </header>
-      <input
-          type="text"
-          placeholder="Enter keywords..."
-          value={keywords}
-          onChange={handleKeywordsChange}
+
+        <input 
+          type="text" 
+          value={keywords} 
+          onChange={handleKeywordsChange} 
+          placeholder="Enter keywords..." 
         />
         <button onClick={handleQuery}>Search Videos</button>
+      </header>
+      {/* Display relevant videos */}
+      {videoData.map((video, index) => (
+        <div key={index}>
+          <h2>{video.videoName}</h2>
+          <video
+            ref={(el) => videoRefs.current.set(video.videoName, el)}
+            width="640"
+            controls
+          >
+            <source src={video.videoPath} type="video/mp4" />
+            This video is not supported by the current browser.
+          </video>
+          {/* Display start times that are relevant to the search word */}
+          <ul>
+            {video.startTimes.map((startTime, idx) => (
+              <li key={idx}>
+                <a href="#" onClick={(e) => {
+                  e.preventDefault();
+                  seekTo(video.videoName, startTime); 
+                }}>
+                  {startTime}s - {video.descriptions[idx]}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
   );
 }

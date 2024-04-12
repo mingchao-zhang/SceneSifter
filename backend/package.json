@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "description": "",
-  "main": "src/index.cjs",
+  "main": "src/index.mjs",
   "scripts": {
-    "start": "node src/index.cjs",
+    "start": "node src/index.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "chen_li mingchao_zhang yutong_li",

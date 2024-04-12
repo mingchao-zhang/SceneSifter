@@ -129,7 +129,7 @@ export default class PostgresService {
                 "similarity": row.similarity 
             });
         }
-        callback(videoIntervals);
+        callback(null, videoIntervals);
     }
 
     async selectAll(callback) {
