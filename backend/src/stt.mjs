@@ -13,7 +13,7 @@ const MODEL_PATH = path.join(process.cwd(), 'model');
  * Group words into sentences.
  * @param {Array.<vosk.WordResult>} words 
  * @param {Number} pauseBound - The minimal seconds of pause between sentences.
- * @return {Array} A list of {startTime, endTime, text}
+ * @return {Array} A list of {start_time, end_time, description}
  */
 const groupWords = (words, pauseBound) => {
     let sentences = [];
@@ -28,9 +28,9 @@ const groupWords = (words, pauseBound) => {
             s += ' ' + word.word;
         } else {
             sentences.push({
-                startTime: start,
-                endTime: end,
-                text: s,
+                start_time: start,
+                end_time: end,
+                description: s,
             });
             s = word.word;
             start = word.start;
@@ -39,9 +39,9 @@ const groupWords = (words, pauseBound) => {
     })
     if (start != 0 && s != '') {
         sentences.push({
-            startTime: start,
-            endTime: end,
-            text: s,
+            start_time: start,
+            end_time: end,
+            description: s,
         });
     }
     return sentences;
@@ -88,7 +88,7 @@ const speechToText = async (file, callback) => {
         });
 }
 
-const stt = async (videoFile, callback) => {
+export default async function stt(videoFile, callback) {
     if (!fs.existsSync(MODEL_PATH)) {
         console.log('Please download the model from https://alphacephei.com/vosk/models and unpack as ' + MODEL_PATH + ' in the current folder.')
         process.exit()
@@ -106,11 +106,3 @@ const stt = async (videoFile, callback) => {
         });
     });
 }
-
-const videoPath = path.join(process.cwd(), 'uploaded_videos/test.mp4');
-console.log(videoPath)
-
-
-stt(videoPath, (err, sentences) => {
-    console.log(">>>", err, sentences)
-})

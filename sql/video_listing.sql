@@ -5,8 +5,8 @@ DROP TABLE IF EXISTS video_listing;
 CREATE TABLE video_listing (
     id SERIAL PRIMARY KEY,
     video_name TEXT,
-    start_time timestamp without time zone NOT NULL,
-    end_time timestamp without time zone NOT NULL,
+    start_time INT, /* start_time is in seconds */
+    end_time INT, /* end_time is also in seconds */
     description TEXT,
     description_embedding vector(512)
 );

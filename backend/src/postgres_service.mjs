@@ -72,14 +72,14 @@ export default class PostgresService {
     // intervals is a list of json objects that look like the following
     // [
     //     {"video_name": "Video 1",
-    //     "start_time": '2024-03-18 10:00:00', 
-    //      "end_time": '2024-03-18 10:30:00',
+    //      "start_time": '0', 
+    //      "end_time": '5',
     //      "description": 'random text number 1'
     //     },
     //     {
     //     "video_name": "Video 2",
-    //     "start_time": '2024-03-18 11:00:00', 
-    //     "end_time": '2024-03-18 11:30:00',
+    //     "start_time": '10', 
+    //     "end_time": '3600',
     //     "description": 'This is the second video.'
     //    }
     // ]
@@ -131,6 +131,23 @@ export default class PostgresService {
         }
         callback(videoIntervals);
     }
+
+    async selectAll(callback) {
+        let queryStr = 'SELECT * FROM video_listing'
+        const res = await this.client.query(queryStr)
+        let videoIntervals = [];
+        for (let i = 0; i < res.rows.length; i++) {
+            const row = res.rows[i];
+
+            videoIntervals.push(
+                {"video_name": row.video_name, 
+                "start_time": row.start_time,
+                "end_time": row.end_time,
+                "description": row.description
+            });
+        }
+        callback(null, videoIntervals);
+    }
 }
 
 
@@ -138,20 +155,20 @@ export default class PostgresService {
 /*
 let testIntervals = [
     {"video_name": "Video 1",
-    "start_time": '2024-03-18 10:00:00', 
-     "end_time": '2024-03-18 10:30:00',
+    "start_time": 0, 
+     "end_time": 5,
      "description": 'random text number 1'
     },
     {
     "video_name": "Video 2",
-    "start_time": '2024-03-18 11:00:00', 
-    "end_time": '2024-03-18 11:30:00',
+    "start_time": 65, 
+    "end_time": 75,
     "description": 'This is the second video.'
    },
    {
     "video_name": "Video 3",
-    "start_time": '2024-03-18 12:00:00', 
-    "end_time": '2024-03-18 12:30:00',
+    "start_time": 0, 
+    "end_time": 3600,
     "description": 'This is the third video.'
    }
 ]
