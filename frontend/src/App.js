@@ -79,12 +79,13 @@ function App() {
 
   return (
     <div className="App">
-      <div className="app-name">
-        Scenesifter
-        <div className="app-name-subtitle">A video search tool</div>
-      </div>
+      <header className="header-background">
+        <div className="header-icon"></div>
+        <h1 className="app-title">SceneSifter</h1>
+        <div></div> 
+      </header>
 
-      <header className="App-header">
+      <div className="App-header">
         <input type="file" onChange={handleFileChange} accept="video/*" />
         <button onClick={handleUpload}>Upload Video</button>
         {fileName && <p>Selected file: {fileName}</p>}
@@ -96,7 +97,7 @@ function App() {
           placeholder="Enter keywords..." 
         />
         <button onClick={handleQuery}>Search Videos</button>
-      </header>
+      </div>
       {/* Display relevant videos */}
       {videoData.map((video, index) => (
         <div key={index} className="video-item">
