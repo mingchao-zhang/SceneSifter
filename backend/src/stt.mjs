@@ -1,12 +1,10 @@
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const pv = require('./process_video.cjs');
+import * as pv from './process_video.mjs';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as wav from 'wav';
+import { Readable } from 'stream';
+import * as vosk from 'vosk';
 
-const fs = require('fs');
-const vosk = require('vosk');
-const { Readable } = require('stream');
-const wav = require('wav');
-const path = require('path')
 const MODEL_PATH = path.join(process.cwd(), 'model');
 
 /**
@@ -94,15 +92,18 @@ export default async function stt(videoFile, callback) {
         process.exit()
     }
 
-    const audioFile = await pv.extractMonoPCMWav(videoFile);
-    speechToText(audioFile, (res) => {
-        // remove the generated audioFile after getting the speech
-        fs.unlink(audioFile, (err) => {
-            if (err) {
-                callback(err)
-            } else {
-                callback(null, res)
-            }
+    pv.extractMonoPCMWav(videoFile)
+    .then((audioFile) => {
+        speechToText(audioFile, (res) => {
+            // remove the generated audioFile after getting the speech
+            fs.unlink(audioFile, (err) => {
+                if (err) {
+                    callback(err)
+                } else {
+                    callback(null, res)
+                }
+            });
         });
-    });
+    })
+    .catch(err => {console.log(err)});
 }
