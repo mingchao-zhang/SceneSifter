@@ -1,9 +1,8 @@
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const cors = require('cors');
+import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import cors from 'cors';
+
 const app = express();
 const port = 5001;
 const uploadedVideoDir = 'uploaded_videos'

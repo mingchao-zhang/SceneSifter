@@ -1,10 +1,6 @@
-// needed to import both transformers and the postgresql client
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-
 import { pipeline, layer_norm } from '@xenova/transformers';
-const { Client } = require("pg");
-const PropertiesReader = require('properties-reader');
+import { Client } from 'pg';
+import PropertiesReader from "properties-reader";
 
 // get the current directory
 import { dirname } from 'path';
