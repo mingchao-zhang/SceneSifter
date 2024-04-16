@@ -83,7 +83,7 @@ export default class PostgresService {
     //     "description": 'This is the second video.'
     //    }
     // ]
-    async insert(intervals, callback) {
+    async insert(intervals, type, callback) {
         // 1. for each interval, convert the description field to a vector and add it to the interval
         await appendVectorsToIntervals(this.extractor, intervals)
 
@@ -95,13 +95,14 @@ export default class PostgresService {
             sub_string += `'${interval['video_name']}', `
             sub_string += `'${interval['start_time']}', `
             sub_string += `'${interval['end_time']}', `
+            sub_string += `'${type}'`,
             sub_string += `'${interval['description']}', `
             sub_string += `ARRAY [${interval['description_embedding']}]`
             sub_string += '),\n'
             value_string += sub_string
         }
         value_string = value_string.slice(0, -2);
-        let queryStr = "INSERT INTO video_listing (video_name, start_time, end_time, description, description_embedding) VALUES \n" + value_string
+        let queryStr = "INSERT INTO video_listing (video_name, start_time, end_time, description_type, description, description_embedding) VALUES \n" + value_string
 
         // 3. execute the query string
         const res = await this.client.query(queryStr);

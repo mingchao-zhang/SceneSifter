@@ -9,6 +9,7 @@ const port = 5001;
 const uploadedVideoDir = 'uploaded_videos'
 import PostgresService from './postgres_service.mjs';
 import stt from './stt.mjs'; // speech to text
+import * as itt from './itt.mjs'; // image to text
 
 // Set up infrastructure
 app.use(cors()); // Enable CORS. Without this, the frontend will get an err response
@@ -39,22 +40,38 @@ await pgService.connect();
 3. insert video intervals to postgresql database
 */
 app.post('/upload', upload.single('video'), (req, res) => {
-  let videoPath = req.file.path
+  let videoPath = req.file.path;
   stt(videoPath, (err, sentences) => {
     // prepare sentences for insertions
     for (const sentence of sentences) {
-      sentence['video_name'] = req.file.originalname
-      sentence['start_time'] = Math.floor(sentence['start_time'])
-      sentence['end_time'] = Math.floor(sentence['end_time'])
+      sentence['video_name'] = req.file.originalname;
+      sentence['start_time'] = Math.floor(sentence['start_time']);
+      sentence['end_time'] = Math.floor(sentence['end_time']);
       // single quotes would have problems when constructing the insert query;
       // TODO: need to think about a more elegant way
-      sentence['description'] = sentence['description'].replace(/'/g, "''")
+      sentence['description'] = sentence['description'].replace(/'/g, "''");
     }
 
-    pgService.insert(sentences, (e, v) => {
+    pgService.insert(sentences, 'speech', (e, v) => {
         res.json({ message: 'Video uploaded successfully!' });
     })
   });
+
+  itt.vid2imgs(videoPath, (err, entries) => {
+    if (err != null) {
+      console.error(err);
+    }
+    if (entries != undefined) {
+      for (const entry of entries) {
+        entry['video_name'] = req.file.originalname;
+        entry['description'] = entry['description'].replace(/'/g, "''");
+      }
+    }
+
+    pgService.insert(entries, 'image', (e, v) => {
+      console.log('image info inserted');
+    });
+  })
 });
 
 

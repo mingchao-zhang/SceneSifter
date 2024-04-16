@@ -12,11 +12,11 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 const runFFmpegCommand = (command) => new Promise((resolve, reject) => {
   exec(command, (error, stdout, stderr) => {
     if (error) {
-        console.error(`Error: ${error.message}`);
-        return reject(error);
+      console.error(`Error: ${error.message}`);
+      return reject(error);
     }
     if (stderr) {
-        console.log(`stderr: ${stderr}`);
+      console.log(`stderr: ${stderr}`);
     }
     resolve(stdout);
   });
@@ -35,6 +35,12 @@ const encodeTime = (dir, interval) => {
   });
 }
 
+/**
+ * Split videos into chunks
+ * @param {string} inputFile 
+ * @param {string} outputDir 
+ * @param {Number} interval 
+ */
 const chunkVideo = async (inputFile, outputDir, interval) => {
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });

@@ -96,7 +96,7 @@ export default async function stt(videoFile, callback) {
     .then((audioFile) => {
         speechToText(audioFile, (res) => {
             // remove the generated audioFile after getting the speech
-            fs.unlink(audioFile, (err) => {
+            fs.unlinkSync(audioFile, (err) => {
                 if (err) {
                     callback(err)
                 } else {
