@@ -1,13 +1,12 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const express = require('express');
-const multer = require('multer');
+
 const path = require('path');
 const cors = require('cors');
 const app = express();
 const port = 5001;
 const uploadedVideoDir = 'uploaded_videos'
-import PostgresService from './postgres_service.mjs';
 import stt from './stt.mjs'; // speech to text
 
 // Set up infrastructure
@@ -18,6 +17,7 @@ app.use(express.json()); // Middleware to parse JSON bodies
 app.use('/videos', express.static(path.join(process.cwd(), uploadedVideoDir)));
 
 // Setup file storage
+const multer = require('multer');
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(process.cwd(), uploadedVideoDir);
@@ -30,35 +30,45 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Set up PostgresService
+import PostgresService from './postgres_service.mjs';
 const pgService = new PostgresService();
 await pgService.connect();
 
+// Set up ChatService
+import ChatService from "./chatgpt.mjs";
+const chatService = new ChatService();
+
 /*
-1. store the uploaded videos to local
+1. store the uploaded videos to the local directory, backend/uploaded_videos
 2. extract speech and create video intervals
 3. insert video intervals to postgresql database
+4. add the extracted speech to the chatservice
 */
 app.post('/upload', upload.single('video'), (req, res) => {
   let videoPath = req.file.path
+  let allText = ''
   stt(videoPath, (err, sentences) => {
     // prepare sentences for insertions
     for (const sentence of sentences) {
       sentence['video_name'] = req.file.originalname
       sentence['start_time'] = Math.floor(sentence['start_time'])
       sentence['end_time'] = Math.floor(sentence['end_time'])
+      allText += sentence['description']
       // single quotes would have problems when constructing the insert query;
       // TODO: need to think about a more elegant way
       sentence['description'] = sentence['description'].replace(/'/g, "''")
     }
 
     pgService.insert(sentences, (e, v) => {
-        res.json({ message: 'Video uploaded successfully!' });
-    })
+      chatService.addToContext(allText);
+      console.log(chatService.context)
+      res.json({ message: 'Video uploaded successfully!' });
+    });
   });
 });
 
 
-/* This is what the return value to the frontend looks like:
+/* This is what the return value of this function to the frontend looks like:
 [
   {
     videoName: 'children_new_billionaires.mp4',
@@ -78,8 +88,8 @@ app.post('/upload', upload.single('video'), (req, res) => {
 ]
 */
 app.post('/query', (req, res) => {
-  const keywords = req.body.keywords;
-  pgService.search(keywords, 5, (e, intervals) => {
+  // after postgresql returns similar video intervals, prepare them for the frontend response
+  function processIntervals(intervals) {
     // group intervals by the video_name field
     let videoGroups = {}
     for (const interval of intervals) {
@@ -106,9 +116,25 @@ app.post('/query', (req, res) => {
         'descriptions': descriptions
       })
     }
+    return videos
+  }
 
-  res.json({videos: videos})
-});
+  const query = req.body.keywords;
+  const topResultNum = 5;
+  // if the query is a question, use the chat service to get an answer first
+  const lastChar = query[query.length - 1];
+  if (lastChar === '?') {
+    chatService.query(query, (e, answer) => {
+      console.log("Chat service answer: ", answer)
+      pgService.search(answer, topResultNum, (e, intervals) => {
+        res.json({videos: processIntervals(intervals)});
+      });
+    })
+  } else {
+    pgService.search(query, topResultNum, (e, intervals) => {
+      res.json({videos: processIntervals(intervals)});
+    });
+  }
 });
 
 app.listen(port, () => {
