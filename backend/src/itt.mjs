@@ -17,9 +17,9 @@ async function img2text(filename) {
     return result;
 }
 
-async function vid2imgs(videoPath, interval=5, cb) {
+async function vid2imgs(videoPath, interval, cb) {
     let videoName = videoPath.replace(/^.*[\\\/]/, '').replace('.mp4', '');
-    let imgDir = `../tmp/${videoName}/imgs`;
+    let imgDir = `tmp/${videoName}/imgs`;
     
     await pv.extractFrames(videoPath, interval, imgDir);
     console.log(videoPath, ": successfully extracted frames");
@@ -32,9 +32,10 @@ async function vid2imgs(videoPath, interval=5, cb) {
         img2text(`${imgDir}/${file}`).then((response) => {
             pending--;
             if (response[0] != undefined && response[0]['generated_text'] != undefined) {
+                let start = parseInt(file.replace('.jpg', ''));
                 let entry = {
-                    start_time: parseInt(file.replace('.jpg', '')),
-                    end_time: start_time + interval,
+                    start_time: start,
+                    end_time: start + interval,
                     description: response[0]['generated_text'],
                 }
                 results.push(entry);

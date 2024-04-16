@@ -1,5 +1,6 @@
 import { pipeline, layer_norm } from '@xenova/transformers';
-import { Client } from 'pg';
+import pg from 'pg';
+const { Client } = pg;
 import PropertiesReader from "properties-reader";
 
 // get the current directory
@@ -91,7 +92,7 @@ export default class PostgresService {
             sub_string += `'${interval['video_name']}', `
             sub_string += `'${interval['start_time']}', `
             sub_string += `'${interval['end_time']}', `
-            sub_string += `'${type}'`,
+            sub_string += `'${type}', `,
             sub_string += `'${interval['description']}', `
             sub_string += `ARRAY [${interval['description_embedding']}]`
             sub_string += '),\n'

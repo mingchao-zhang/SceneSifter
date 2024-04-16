@@ -9,5 +9,5 @@ CREATE TABLE video_listing (
     end_time INT, /* end_time is also in seconds */
     description_type TEXT,  /* either "speech" or "image" */
     description TEXT,
-    description_embedding vector(512),
+    description_embedding vector(512)
 );

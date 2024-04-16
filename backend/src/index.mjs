@@ -2,10 +2,15 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import cors from 'cors';
+import fs from 'fs';
 
 const app = express();
 const port = 5001;
-const uploadedVideoDir = 'uploaded_videos'
+const uploadedVideoDir = path.join(process.cwd(), 'uploaded_videos');
+if (!fs.existsSync(uploadedVideoDir)) {
+  fs.mkdirSync(uploadedVideoDir, { recursive: true });
+}
+
 import PostgresService from './postgres_service.mjs';
 import stt from './stt.mjs'; // speech to text
 import * as itt from './itt.mjs'; // image to text
@@ -15,13 +20,12 @@ app.use(cors()); // Enable CORS. Without this, the frontend will get an err resp
 app.use(express.json()); // Middleware to parse JSON bodies
 // because both frontend and backend are local, we can set up a video endpoint for the
 // frontend to access uploaded videos instead of sending uploaded videos back to the frontend
-app.use('/videos', express.static(path.join(process.cwd(), uploadedVideoDir)));
+app.use('/videos', express.static(uploadedVideoDir));
 
 // Setup file storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(process.cwd(), uploadedVideoDir);
-    cb(null, uploadDir);
+    cb(null, uploadedVideoDir);
   },
   filename: (req, file, cb) => {
     cb(null, file.originalname);
@@ -56,10 +60,11 @@ app.post('/upload', upload.single('video'), (req, res) => {
     })
   });
 
-  itt.vid2imgs(videoPath, (err, entries) => {
+  itt.vid2imgs(videoPath, 5, (err, entries) => {
     if (err != null) {
       console.error(err);
     }
+    console.log(entries[0]);
     if (entries != undefined) {
       for (const entry of entries) {
         entry['video_name'] = req.file.originalname;
