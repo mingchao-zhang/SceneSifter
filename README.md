@@ -28,3 +28,8 @@
 Download a model (I tried with `vosk-model-en-us-0.22-lgraph`) from https://alphacephei.com/vosk/models and unpack as `stt_model` in the current folder.
 
 Consider integrating it into the docker image.
+
+
+### References
+* Header background image: <a href="https://stocksnap.io/photo/colorful-bokeh-FSOBBNPKKZ">Photo</a> by <a href="https://stocksnap.io/author/hdwallpapers">HD Wallpapers</a> on <a href="https://stocksnap.io">StockSnap</a>
+* [TV icon](https://pixabay.com/illustrations/tv-ancient-appliance-retro-screen-7794355/)

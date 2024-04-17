@@ -3,12 +3,11 @@ import pg from 'pg';
 const { Client } = pg;
 import PropertiesReader from "properties-reader";
 
-// get the current directory
+// get database meta data
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
-
-// get database meta data
+const PropertiesReader = require('properties-reader');
 const properties = PropertiesReader(__dirname + '/application.properties.ini');
 
 

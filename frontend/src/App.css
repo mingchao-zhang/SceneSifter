@@ -1,3 +1,33 @@
+.header-background {
+  background-image: url('../public/background.jpg');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center; 
+  position: relative;
+}
+
+.header-icon {
+  background-image: url('../public/tv.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  position: absolute;
+  left: 15em;
+  width: 140px; 
+  height: 140px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.app-title {
+  font-family: 'Pacifico', cursive;
+  font-size: 4.5rem; 
+  padding: 20px 0;
+  color: rgb(247, 235, 235);
+}
+
+
 body {
   font-family: 'Arial', sans-serif;
   margin: 0;
@@ -115,19 +145,4 @@ body {
     grid-template-columns: 1fr;
     padding: 0 10px;
   }
-}
-
-.app-name {
-  background-color: #333;
-  color: white;
-  text-align: center;
-  padding: 20px 0;
-  font-size: 3rem; 
-  font-weight: 300; 
-}
-
-.app-name-subtitle {
-  font-size: 1.5rem; 
-  font-weight: 300; 
-  margin-top: 10px;
 }
