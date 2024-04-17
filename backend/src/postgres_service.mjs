@@ -95,6 +95,9 @@ export default class PostgresService {
      * @param {() => {}} callback 
      */
     async insert(intervals, source, callback) {
+        if (intervals == null || intervals.length == 0) {
+            callback();
+        }
         // 1. for each interval, convert the description field to a vector and add it to the interval
         await appendVectorsToIntervals(this.extractor, intervals)
 

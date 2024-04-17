@@ -12,8 +12,8 @@ if (!fs.existsSync(uploadedVideoDir)) {
 }
 
 import PostgresService from './postgres_service.mjs';
-import stt from './stt.mjs'; // speech to text
-import * as itt from './itt.mjs'; // image to text
+import getTranscription from './stt.mjs'; // speech to text
+import vid2imgDesc from './itt.mjs'; // vid to img to text
 
 // Set up infrastructure
 app.use(cors()); // Enable CORS. Without this, the frontend will get an err response
@@ -44,7 +44,7 @@ await pgService.connect();
 */
 app.post('/upload', upload.single('video'), (req, res) => {
   let videoPath = req.file.path;
-  stt(videoPath, (err, sentences) => {
+  const stt = getTranscription(videoPath).then(sentences => {
     // prepare sentences for insertions
     for (const sentence of sentences) {
       sentence['video_name'] = req.file.originalname;
@@ -52,30 +52,31 @@ app.post('/upload', upload.single('video'), (req, res) => {
       sentence['end_time'] = Math.floor(sentence['end_time']);
       // single quotes would have problems when constructing the insert query;
       // TODO: need to think about a more elegant way
-      sentence['description'] = sentence['description'].replace(/'/g, "''");
+      sentence['description'] = sentence['transcript'].replace(/'/g, "''");
     }
 
     pgService.insert(sentences, 'speech', (e, v) => {
-        res.json({ message: 'Video uploaded successfully!' });
+      console.log('speech info inserted');
+      return;
     })
-  });
+  }); // TODO: catch potential error?
 
-  itt.vid2imgs(videoPath, 5, (err, entries) => {
-    if (err != null) {
-      console.error(err);
-    }
-    console.log(entries[0]);
-    if (entries != undefined) {
-      for (const entry of entries) {
-        entry['video_name'] = req.file.originalname;
-        entry['description'] = entry['description'].replace(/'/g, "''");
-      }
+  const itt = vid2imgDesc(videoPath, 5).then(entries => {
+    for (const entry of entries) {
+      entry['video_name'] = req.file.originalname;
+      entry['description'] = entry['description'].replace(/'/g, "''");
     }
 
     pgService.insert(entries, 'image', (e, v) => {
       console.log('image info inserted');
+      return;
     });
-  })
+  }).catch(err => { 
+    console.error(err); 
+    throw err;
+  });
+
+  Promise.all([stt, itt]).then(() => res.json({ message: `${req.file.originalname} uploaded successfully!` }));
 });
 
 
