@@ -11,10 +11,14 @@ const properties = PropertiesReader(__dirname + '/application.properties.ini');
 
 async function img2text(filename) {
     const data = fs.readFileSync(filename);
+    const token = properties.get('HUGGINGFACE_TOKEN');
+    if (token == undefined || token == null) {
+        return new Error('Please specify a token used for huggingface models in application.properties.ini');
+    } 
     const response = await fetch(
         "https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-large",
         {
-            headers: { Authorization: `Bearer ${properties.get('HUGGINGFACE_TOKEN')}` },
+            headers: { Authorization: `Bearer ${token}` },
             method: "POST",
             body: data,
         }
@@ -50,8 +54,8 @@ export default async function vid2imgDesc(videoPath, interval) {
     let results = [];
     let errors = [];
 
-    const tasks = files.map(file => new Promise((resolve, reject) => {
-        img2text(`${imgDir}/${file}`).then(response => {
+    const tasks = files.map(file => img2text(`${imgDir}/${file}`)
+        .then(response => {
             let start = parseInt(file.replace('.jpg', ''));
             if (response[0] != undefined && response[0]['generated_text'] != undefined) {
                 let entry = {
@@ -63,8 +67,10 @@ export default async function vid2imgDesc(videoPath, interval) {
             } else {
                 errors.push(`Error describing image at ${start}s: ${response}`);
             }
-            resolve();
-    })}));
+            return;
+        })
+        .catch(err => err)
+    );
 
     await Promise.all(tasks);
 

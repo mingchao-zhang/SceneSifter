@@ -22,7 +22,6 @@ app.use(express.json()); // Middleware to parse JSON bodies
 app.use('/videos', express.static(uploadedVideoDir));
 
 // Setup file storage
-const multer = require('multer');
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadedVideoDir);

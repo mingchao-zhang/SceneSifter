@@ -7,7 +7,6 @@ import PropertiesReader from "properties-reader";
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const PropertiesReader = require('properties-reader');
 const properties = PropertiesReader(__dirname + '/application.properties.ini');
 
 
