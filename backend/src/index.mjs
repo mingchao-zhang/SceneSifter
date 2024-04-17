@@ -38,24 +38,58 @@ await pgService.connect();
 2. extract speech and create video intervals
 3. insert video intervals to postgresql database
 */
-app.post('/upload', upload.single('video'), (req, res) => {
-  let videoPath = req.file.path
-  stt(videoPath, (err, sentences) => {
-    // prepare sentences for insertions
-    for (const sentence of sentences) {
-      sentence['video_name'] = req.file.originalname
-      sentence['start_time'] = Math.floor(sentence['start_time'])
-      sentence['end_time'] = Math.floor(sentence['end_time'])
-      // single quotes would have problems when constructing the insert query;
-      // TODO: need to think about a more elegant way
-      sentence['description'] = sentence['description'].replace(/'/g, "''")
-    }
+// app.post('/upload', upload.array('video'), (req, res) => {
+//   let videoPath = req.file.path
+//   stt(videoPath, (err, sentences) => {
+//     // prepare sentences for insertions
+//     console.log('sentences: ', sentences);
+//     for (const sentence of sentences) {
+//       sentence['video_name'] = req.file.originalname
+//       sentence['start_time'] = Math.floor(sentence['start_time'])
+//       sentence['end_time'] = Math.floor(sentence['end_time'])
+//       // single quotes would have problems when constructing the insert query;
+//       // TODO: need to think about a more elegant way
+//       sentence['description'] = sentence['description'].replace(/'/g, "''")
+//     }
 
-    pgService.insert(sentences, (e, v) => {
-        res.json({ message: 'Video uploaded successfully!' });
-    })
+//     pgService.insert(sentences, (e, v) => {
+//         res.json({ message: 'Video uploaded successfully!' });
+//     })
+//   });
+// });
+
+app.post('/upload', upload.array('video', 5), (req, res) => {
+  // Loop through each uploaded file
+  req.files.forEach(async (file) => {
+    const videoPath = file.path;
+    stt(videoPath, (err, sentences) => {
+      if (err) {
+        console.error('Error extracting speech from video:', err);
+        return res.status(500).json({ error: 'Error extracting speech from video' });
+      }
+      // Prepare sentences for insertion
+      console.log('Sentences:', sentences);
+      sentences.forEach((sentence) => {
+        sentence['video_name'] = file.originalname;
+        sentence['start_time'] = Math.floor(sentence['start_time']);
+        sentence['end_time'] = Math.floor(sentence['end_time']);
+        // Escape single quotes in description to prevent SQL injection
+        sentence['description'] = sentence['description'].replace(/'/g, "''");
+      });
+
+      // Insert sentences into database
+      pgService.insert(sentences, (e, v) => {
+        if (e) {
+          console.error('Error inserting sentences into database:', e);
+          return res.status(500).json({ error: 'Error inserting sentences into database' });
+        }
+        console.log('Sentences inserted into database:', v);
+      });
+    });
   });
-});
+
+  res.json({ message: 'Videos uploaded successfully!' });
+})
 
 
 /* This is what the return value to the frontend looks like:

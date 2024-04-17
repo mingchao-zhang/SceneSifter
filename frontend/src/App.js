@@ -9,10 +9,19 @@ function App() {
   const [keywords, setKeywords] = useState('');
 
   const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      setFileName(file.name);
+    // const file = event.target.files[0];
+    // if (file) {
+    //   setSelectedFile(file);
+    //   setFileName(file.name);
+    // } else {
+    //   setSelectedFile(null);
+    //   setFileName('');
+    // }
+    const files = event.target.files;
+    if (files.length > 0) {
+      setSelectedFile(files);
+      const fileNames = Array.from(files).map((file) => file.name).join(', ');
+      setFileName(fileNames);
     } else {
       setSelectedFile(null);
       setFileName('');
@@ -24,9 +33,14 @@ function App() {
       alert('Please select a file first!');
       return;
     }
-
+    // const formData = new FormData();
+    // formData.append('video', selectedFile);
     const formData = new FormData();
-    formData.append('video', selectedFile);
+    // Loop through each selected file and append it to formData
+    for (let i = 0; i < selectedFile.length; i++) {
+      formData.append('video', selectedFile[i]);
+    }
+    
 
     try {
       const response = await fetch('http://localhost:5001/upload', {
@@ -86,7 +100,7 @@ function App() {
       </header>
 
       <div className="App-header">
-        <input type="file" onChange={handleFileChange} accept="video/*" />
+        <input type="file" onChange={handleFileChange} accept="video/*" multiple />
         <button onClick={handleUpload}>Upload Video</button>
         {fileName && <p>Selected file: {fileName}</p>}
 
