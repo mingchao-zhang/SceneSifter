@@ -89,7 +89,7 @@ const extractFirstFrames = async (inputDir, outputDir) => {
  * 
  * @param {*} videoPath 
  * @param {*} outputDir 
- * @returns converted file name
+ * @returns {Promise<string>} converted file name
  */
 const extractMonoPCMWav = async (videoPath, outputDir='') => {
   if (outputDir == '') {
@@ -99,7 +99,7 @@ const extractMonoPCMWav = async (videoPath, outputDir='') => {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  const outputFilename = `${videoPath.replace(/\.mp4$/, '.wav')}`;
+  const outputFilename = videoPath.replace(/\.mp4$/, '.wav');
   const outputFile = `${outputDir}/${outputFilename.split('/').pop()}`;
 
   return new Promise((resolve, reject) => {
@@ -120,27 +120,35 @@ const extractMonoPCMWav = async (videoPath, outputDir='') => {
   });
 };
 
-const probeVideo = (videoPath) => {
-  return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(videoPath, (err, metadata) => {
-      if (err) reject(err);
-      else resolve(metadata);
-    });
+const probeVideo = (videoPath) => new Promise((resolve, reject) => {
+  ffmpeg.ffprobe(videoPath, (err, metadata) => {
+    if (err) reject(err);
+    else resolve(metadata);
   });
-};
+});
 
-const extractFrame = (videoPath, seconds, outputFilename) => {
-  return new Promise((resolve, reject) => {
-    ffmpeg(videoPath)
-      .seekInput(seconds)
-      .frames(1)
-      .output(outputFilename)
-      .on('end', () => resolve())
-      .on('error', (err) => reject(err))
-      .run();
-  });
-};
+/**
+ * Extract a frame at *seconds*
+ * @param {string} videoPath 
+ * @param {Number} seconds 
+ * @param {string} outputFilename 
+ */
+const extractFrame = (videoPath, seconds, outputFilename) => new Promise((resolve, reject) => {
+  ffmpeg(videoPath)
+    .seekInput(seconds)
+    .frames(1)
+    .output(outputFilename)
+    .on('end', () => resolve())
+    .on('error', (err) => reject(err))
+    .run();
+});
 
+/**
+ * Extract images from a video
+ * @param {string} videoPath 
+ * @param {Number} interval - extract an image every *interval* seconds
+ * @param {string} [outputDir] - a temporary directory that stores the output images 
+ */
 const extractFrames = async (videoPath, interval, outputDir='') => {
   try {
     if (outputDir == '') {

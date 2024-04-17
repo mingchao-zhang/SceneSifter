@@ -1,7 +1,14 @@
 import * as fs from 'fs';
 import * as pv from './process_video.mjs';
+import PropertiesReader from "properties-reader";
 
-const TOKEN = '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';
+// get the current directory
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const properties = PropertiesReader(__dirname + '/application.properties.ini');
+const TOKEN = properties.get('HUGGINGFACE_TOKEN');
 
 async function img2text(filename) {
     const data = fs.readFileSync(filename);
@@ -17,7 +24,18 @@ async function img2text(filename) {
     return result;
 }
 
-async function vid2imgs(videoPath, interval, cb) {
+/**
+ * @callback vid2imgDescCallback
+ * @param {Array} errors - error responses
+ * @param {{start_time: number, end_time: number, description: string}[]} results
+ */
+/**
+ * Extract images from video and get the descriptions of the images
+ * @param {string} videoPath  
+ * @param {Number} interval - extract an image every *interval* seconds
+ * @param {vid2imgDescCallback} cb - used for passing back the results to caller
+ */
+async function vid2imgDesc(videoPath, interval, cb) {
     let videoName = videoPath.replace(/^.*[\\\/]/, '').replace('.mp4', '');
     let imgDir = `tmp/${videoName}/imgs`;
     
@@ -49,4 +67,4 @@ async function vid2imgs(videoPath, interval, cb) {
     }
 }
 
-export { vid2imgs };
+export { vid2imgDesc };

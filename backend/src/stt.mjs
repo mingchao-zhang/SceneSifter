@@ -105,5 +105,5 @@ export default async function stt(videoFile, callback) {
             });
         });
     })
-    .catch(err => {console.log(err)});
+    .catch(err => {console.err("fail to convert video to wav:", err)});
 }
