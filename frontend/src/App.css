@@ -1,72 +1,100 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+@import url("https://fonts.googleapis.com/css?family=Lato");
+
 .header-background {
-  background-image: url('../public/background.jpg');
+  background-image: url("../public/background.jpg");
   background-size: cover;
   background-position: center;
   display: flex;
   align-items: center;
-  justify-content: center; 
+  justify-content: center;
   position: relative;
 }
 
 .header-icon {
-  background-image: url('../public/tv.png');
+  background-image: url("../public/tv.png");
   background-size: contain;
   background-repeat: no-repeat;
   position: absolute;
   left: 15em;
-  width: 140px; 
+  width: 140px;
   height: 140px;
   top: 50%;
   transform: translateY(-50%);
 }
 
 .app-title {
-  font-family: 'Pacifico', cursive;
-  font-size: 4.5rem; 
-  padding: 20px 0;
+  font-family: "Pacifico", cursive;
+  font-size: 4.5rem;
   color: rgb(247, 235, 235);
 }
 
-
 body {
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
   margin: 0;
   padding: 0;
   background-color: #f7f7f7;
   color: #333;
 }
 
-.App-header {
-  background-color: #fff;
+.search-box {
+  font-size: 1.3rem;
+  background-color: #f7f7f7;
   padding: 20px;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.App-header input[type="text"] {
-  padding: 10px;
-  width: 80%;
-  margin-top: 20px;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  font-size: 16px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.search-bar {
+  width: 40%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 15px;
+  box-shadow: 0 0.5px 5px #ed9191;
+  padding: 5px 20px;
+  margin: 0 50px; /* space between search bar and the search button */
 }
 
-.App-header button {
-  padding: 10px 20px;
-  margin-top: 20px;
+.search-input {
+  font-family: "Lato", sans-serif;
+  font-size: 1.3rem;
+  flex-grow: 1;
   border: none;
-  border-radius: 20px;
-  background-color: #007bff;
-  color: white;
-  font-size: 16px;
+  margin: 0 10px; /* space for the X icon on the right */
+  padding: 10px;
+  outline: none;
+}
+
+.search-icon {
+  margin-right: 5px;
+  user-select: none;
+}
+
+.clear-icon {
+  margin-left: 5px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.search-box button {
+  padding: 15px 15px;
+  border: none;
+  border-radius: 15px;
+  background-color: #c9ec9f;
+  color: #060606b4;
+  font-family: "Lato", sans-serif;
+  font-size: 1.5rem;
+  text-align: center;
   cursor: pointer;
 }
 
-.App-header button:hover {
-  background-color: #0056b3;
+.search-box button:hover {
+  background-color: #aceef2;
 }
 
 .video-listing {
@@ -92,9 +120,8 @@ body {
   margin: 20px;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 .video-title {
-  font-family: 'Playfair Display', serif;
+  font-family: "Playfair Display", serif;
   font-weight: 700;
   width: 100%;
   text-align: center;
@@ -117,7 +144,7 @@ body {
 }
 
 .video-item li {
-  font-family: 'Playfair Display', serif;
+  font-family: "Playfair Display", serif;
   font-weight: 500;
   padding: 10px;
   border-bottom: 1px solid #ddd;
@@ -140,25 +167,25 @@ body {
 }
 
 .loading-overlay {
-  display: flex; 
-  position: fixed; 
+  display: flex;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); 
+  background-color: rgba(0, 0, 0, 0.5);
   z-index: 9999;
-  align-items: center; 
+  align-items: center;
   justify-content: center;
 }
 
 .spinner {
-  border: 5px solid #f3f3f3; 
-  border-top: 5px solid #3498db; 
-  border-radius: 50%; 
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
   width: 50px;
   height: 50px;
-  animation: spin 1s linear infinite; 
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
