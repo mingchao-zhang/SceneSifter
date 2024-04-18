@@ -56,7 +56,7 @@ app.post('/upload', upload.single('video'), (req, res) => {
       sentence['video_name'] = req.file.originalname;
       sentence['start_time'] = Math.floor(sentence['start_time']);
       sentence['end_time'] = Math.floor(sentence['end_time']);
-      allText += sentence['description'];
+      allText += sentence['transcript'] + ' ';
       // single quotes would have problems when constructing the insert query;
       // TODO: need to think about a more elegant way
       sentence['description'] = sentence['transcript'].replace(/'/g, "''");
