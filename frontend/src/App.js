@@ -55,6 +55,7 @@ function App() {
 
   const handleQuery = async () => {
     setIsLoading(true);
+    setVideoData([])
     try {
       const response = await fetch("http://localhost:5001/query", {
         method: "POST",

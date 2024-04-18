@@ -61,7 +61,6 @@ app.post('/upload', upload.single('video'), (req, res) => {
 
     pgService.insert(sentences, (e, v) => {
       chatService.addToContext(allText);
-      console.log(chatService.context)
       res.json({ message: 'Video uploaded successfully!' });
     });
   });
