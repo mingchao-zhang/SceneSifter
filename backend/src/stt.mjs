@@ -1,19 +1,24 @@
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const pv = require('./process_video.cjs');
+import * as pv from './process_video.mjs';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as wav from 'wav';
+import { Readable } from 'stream';
+import * as vosk from 'vosk';
 
-const fs = require('fs');
-const vosk = require('vosk');
-const { Readable } = require('stream');
-const wav = require('wav');
-const path = require('path')
 const MODEL_PATH = path.join(process.cwd(), 'model');
+
+/**
+ * @typedef Transcription
+ * @property {Number} start_time
+ * @property {Number} end_time
+ * @property {string} transcript
+ */
 
 /**
  * Group words into sentences.
  * @param {Array.<vosk.WordResult>} words 
  * @param {Number} pauseBound - The minimal seconds of pause between sentences.
- * @return {Array} A list of {start_time, end_time, description}
+ * @return {Transcription[]}
  */
 const groupWords = (words, pauseBound) => {
     let sentences = [];
@@ -30,7 +35,7 @@ const groupWords = (words, pauseBound) => {
             sentences.push({
                 start_time: start,
                 end_time: end,
-                description: s,
+                transcript: s,
             });
             s = word.word;
             start = word.start;
@@ -41,13 +46,17 @@ const groupWords = (words, pauseBound) => {
         sentences.push({
             start_time: start,
             end_time: end,
-            description: s,
+            transcript: s,
         });
     }
     return sentences;
-}
+};
 
-const speechToText = async (file, callback) => {
+/**
+ * @param {string} file - video file 
+ * @returns {Promise<Transcription[]>}
+ */
+const speechToText = (file) => new Promise((resolve, reject) => {
     vosk.setLogLevel(-1);
     const model = new vosk.Model(MODEL_PATH);
     const wfReader = new wav.Reader();
@@ -55,54 +64,62 @@ const speechToText = async (file, callback) => {
 
     wfReader.on('format', async ({ audioFormat, sampleRate, channels }) => {
         if (audioFormat != 1 || channels != 1) {
-            console.error('Audio file must be WAV format mono PCM.');
-            process.exit(1);
+            reject('Audio file must be WAV format mono PCM.');
+            return;
         }
 
         const rec = new vosk.Recognizer({ model: model, sampleRate: sampleRate });
         rec.setWords(true);
         let words = [];
-        for await (const data of wfReadable) {
-            if (rec.acceptWaveform(data)) {
-                let r = rec.result().result;
-                if (r != undefined) {
-                    words.push(...r);
-                }
-            } else {
-                // console.log('par', JSON.stringify(rec.partialResult(), null, 4));
-            }
-        }
 
-        let r = rec.finalResult().result;
-        if (r != undefined) {
-            words.push(...r);
+        try {
+            for await (const data of wfReadable) {
+                if (rec.acceptWaveform(data)) {
+                    let r = rec.result().result;
+                    if (r != undefined) {
+                        words.push(...r);
+                    }
+                } else {
+                    // console.log('par', JSON.stringify(rec.partialResult(), null, 4));
+                }
+            }
+
+            let r = rec.finalResult().result;
+            if (r != undefined) {
+                words.push(...r);
+            }
+            rec.free();
+            let sentences = groupWords(words, 0.5);
+            resolve(sentences);
+        } catch (err) {
+            reject(err);
+        } finally {
+            model.free();
         }
-        rec.free();
-        let sentences = groupWords(words, 0.5);
-        callback(sentences);
     });
 
-    fs.createReadStream(file, { 'highWaterMark': 4096 }).pipe(wfReader).on('finish',
-        function (err) {
-            model.free();
-        });
-}
+    fs.createReadStream(file, { 'highWaterMark': 4096 }).pipe(wfReader).on('error', reject);
+});
 
-export default async function stt(videoFile, callback) {
+
+/**
+ * Extract wav from *videoFile*, then extract transcription
+ * @param {*} videoFile 
+ * @returns {Promise<Transcription[]>}
+ */
+export default async function getTranscription(videoFile) {
     if (!fs.existsSync(MODEL_PATH)) {
         console.log('Please download the model from https://alphacephei.com/vosk/models and unpack as ' + MODEL_PATH + ' in the current folder.')
-        process.exit()
+        process.exit();
     }
 
-    const audioFile = await pv.extractMonoPCMWav(videoFile);
-    speechToText(audioFile, (res) => {
-        // remove the generated audioFile after getting the speech
-        fs.unlink(audioFile, (err) => {
-            if (err) {
-                callback(err)
-            } else {
-                callback(null, res)
-            }
-        });
-    });
-}
+    try {
+        const audioFile = await pv.extractMonoPCMWav(videoFile);
+        const transcription = await speechToText(audioFile);
+        fs.unlinkSync(audioFile); // Remove the generated audio file
+        return transcription;
+    } catch (err) {
+        console.error(err);
+        throw err; // Rethrow the error to be caught by the caller
+    }
+};

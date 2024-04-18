@@ -1,10 +1,8 @@
 // get the open api key
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
+import PropertiesReader from "properties-reader";
 const __dirname = dirname(fileURLToPath(import.meta.url));
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const PropertiesReader = require('properties-reader');
 const properties = PropertiesReader(__dirname + '/application.properties.ini');
 
 import { OpenAI } from "openai"
