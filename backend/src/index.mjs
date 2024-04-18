@@ -1,27 +1,30 @@
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const express = require('express');
+import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import cors from 'cors';
+import fs from 'fs';
 
-const path = require('path');
-const cors = require('cors');
+import getTranscription from './stt.mjs'; // speech to text
+import vid2imgDesc from './itt.mjs'; // vid to img to text
+
 const app = express();
 const port = 5001;
-const uploadedVideoDir = 'uploaded_videos'
-import stt from './stt.mjs'; // speech to text
+const uploadedVideoDir = path.join(process.cwd(), 'uploaded_videos');
+if (!fs.existsSync(uploadedVideoDir)) {
+  fs.mkdirSync(uploadedVideoDir, { recursive: true });
+}
 
 // Set up infrastructure
 app.use(cors()); // Enable CORS. Without this, the frontend will get an err response
 app.use(express.json()); // Middleware to parse JSON bodies
 // because both frontend and backend are local, we can set up a video endpoint for the
 // frontend to access uploaded videos instead of sending uploaded videos back to the frontend
-app.use('/videos', express.static(path.join(process.cwd(), uploadedVideoDir)));
+app.use('/videos', express.static(uploadedVideoDir));
 
 // Setup file storage
-const multer = require('multer');
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(process.cwd(), uploadedVideoDir);
-    cb(null, uploadDir);
+    cb(null, uploadedVideoDir);
   },
   filename: (req, file, cb) => {
     cb(null, file.originalname);
@@ -45,26 +48,44 @@ const chatService = new ChatService();
 4. add the extracted speech to the chatservice
 */
 app.post('/upload', upload.single('video'), (req, res) => {
-  let videoPath = req.file.path
-  let allText = ''
-  stt(videoPath, (err, sentences) => {
+  let videoPath = req.file.path;
+  let allText = '';
+  const stt = getTranscription(videoPath).then(sentences => {
     // prepare sentences for insertions
     for (const sentence of sentences) {
-      sentence['video_name'] = req.file.originalname
-      sentence['start_time'] = Math.floor(sentence['start_time'])
-      sentence['end_time'] = Math.floor(sentence['end_time'])
-      allText += sentence['description']
+      sentence['video_name'] = req.file.originalname;
+      sentence['start_time'] = Math.floor(sentence['start_time']);
+      sentence['end_time'] = Math.floor(sentence['end_time']);
+      allText += sentence['description'];
       // single quotes would have problems when constructing the insert query;
       // TODO: need to think about a more elegant way
-      sentence['description'] = sentence['description'].replace(/'/g, "''")
+      sentence['description'] = sentence['transcript'].replace(/'/g, "''");
     }
 
-    pgService.insert(sentences, (e, v) => {
+    pgService.insert(sentences, 'speech', (e, v) => {
       chatService.addToContext(allText);
       console.log(chatService.context)
-      res.json({ message: 'Video uploaded successfully!' });
+      console.log('speech info inserted');
+      return;
+    })
+  }); // TODO: catch potential error?
+
+  const itt = vid2imgDesc(videoPath, 5).then(entries => {
+    for (const entry of entries) {
+      entry['video_name'] = req.file.originalname;
+      entry['description'] = entry['description'].replace(/'/g, "''");
+    }
+
+    pgService.insert(entries, 'image', (e, v) => {
+      console.log('image info inserted');
+      return;
     });
+  }).catch(err => { 
+    console.error(err); 
+    throw err;
   });
+
+  Promise.all([stt, itt]).then(() => res.json({ message: `${req.file.originalname} uploaded successfully!` }));
 });
 
 

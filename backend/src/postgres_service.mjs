@@ -1,15 +1,12 @@
-// needed to import both transformers and the postgresql client
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-
 import { pipeline, layer_norm } from '@xenova/transformers';
-const { Client } = require("pg");
+import pg from 'pg';
+const { Client } = pg;
+import PropertiesReader from "properties-reader";
 
 // get database meta data
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const PropertiesReader = require('properties-reader');
 const properties = PropertiesReader(__dirname + '/application.properties.ini');
 
 
@@ -67,21 +64,38 @@ export default class PostgresService {
         console.log("Connected to the PostgreSql database.");
     }
 
-    // intervals is a list of json objects that look like the following
-    // [
-    //     {"video_name": "Video 1",
-    //      "start_time": '0', 
-    //      "end_time": '5',
-    //      "description": 'random text number 1'
-    //     },
-    //     {
-    //     "video_name": "Video 2",
-    //     "start_time": '10', 
-    //     "end_time": '3600',
-    //     "description": 'This is the second video.'
-    //    }
-    // ]
-    async insert(intervals, callback) {
+    /* intervals is a list of json objects that look like the following
+    [
+        {"video_name": "Video 1",
+         "start_time": '0', 
+         "end_time": '5',
+         "description": 'random text number 1'
+        },
+        {
+        "video_name": "Video 2",
+        "start_time": '10', 
+        "end_time": '3600',
+        "description": 'This is the second video.'
+       }
+    ]
+    */
+    /**
+     * @typedef {Object} Record
+     * @property {string} video_name
+     * @property {Number} start_time
+     * @property {Number} end_time
+     * @property {string} description
+     */
+    /**
+     * Insert records into DB
+     * @param {Record[]} intervals 
+     * @param {string} source - 'image' | 'speech' - whether the records come from video or speech
+     * @param {() => {}} callback 
+     */
+    async insert(intervals, source, callback) {
+        if (intervals == null || intervals.length == 0) {
+            callback();
+        }
         // 1. for each interval, convert the description field to a vector and add it to the interval
         await appendVectorsToIntervals(this.extractor, intervals)
 
@@ -93,13 +107,14 @@ export default class PostgresService {
             sub_string += `'${interval['video_name']}', `
             sub_string += `'${interval['start_time']}', `
             sub_string += `'${interval['end_time']}', `
+            sub_string += `'${source}', `,
             sub_string += `'${interval['description']}', `
             sub_string += `ARRAY [${interval['description_embedding']}]`
             sub_string += '),\n'
             value_string += sub_string
         }
         value_string = value_string.slice(0, -2);
-        let queryStr = "INSERT INTO video_listing (video_name, start_time, end_time, description, description_embedding) VALUES \n" + value_string
+        let queryStr = "INSERT INTO video_listing (video_name, start_time, end_time, source, description, description_embedding) VALUES \n" + value_string
 
         // 3. execute the query string
         const res = await this.client.query(queryStr);
