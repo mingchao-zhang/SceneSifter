@@ -55,7 +55,7 @@ function App() {
 
   const handleQuery = async () => {
     setIsLoading(true);
-    setVideoData([])
+    setVideoData([]);
     try {
       const response = await fetch("http://localhost:5001/query", {
         method: "POST",
@@ -83,6 +83,17 @@ function App() {
     }
   };
 
+  const clearSearch = () => {
+    setKeywords("");
+  };
+
+  const handleKeyDown = (event) => {
+    // Check if the Enter key was pressed
+    if (event.key === "Enter") {
+      handleQuery();
+    }
+  };
+
   return (
     <div className="App">
       {/* loading overlay; displayed while waiting for responses */}
@@ -98,18 +109,28 @@ function App() {
         <div></div>
       </header>
 
-      <div className="App-header">
-        <input type="file" onChange={handleFileChange} accept="video/*" />
-        <button onClick={handleUpload}>Upload Video</button>
-        {fileName && <p>Selected file: {fileName}</p>}
+      <input type="file" onChange={handleFileChange} accept="video/*" />
+      <button onClick={handleUpload}>Upload Video</button>
+      {fileName && <p>Selected file: {fileName}</p>}
 
-        <input
-          type="text"
-          value={keywords}
-          onChange={handleKeywordsChange}
-          placeholder="Enter keywords..."
-        />
-        <button onClick={handleQuery}>Search Videos</button>
+      <div className="search-box">
+        <div className="search-bar">
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            className="search-input"
+            value={keywords}
+            onChange={handleKeywordsChange}
+            placeholder="Enter keywords..."
+            onKeyDown={handleKeyDown}
+          />
+          {keywords && (
+            <span className="clear-icon" onClick={clearSearch}>
+              ✖️
+            </span>
+          )}
+        </div>
+        <button onClick={handleQuery}>Search</button>
       </div>
 
       <div className="video-listing">
