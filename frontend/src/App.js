@@ -2,51 +2,66 @@ import React, { useState, useRef } from "react";
 import "./App.css";
 
 function App() {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [fileName, setFileName] = useState("");
+  const fileInputRef = useRef(null);
+  // store file objects
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  // just store the file names
+  const [uploadingFiles, setUploadingFiles] = useState([]);
   const [videoData, setVideoData] = useState([]);
   const videoRefs = useRef(new Map());
   const [keywords, setKeywords] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      setFileName(file.name);
+    const files = event.target.files;
+    if (files.length > 0) {
+      setSelectedFiles(Array.from(files));
     } else {
-      setSelectedFile(null);
-      setFileName("");
+      setSelectedFiles([]);
     }
   };
 
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      alert("Please select a file first!");
-      return;
-    }
-
+  const uploadFile = async (file) => {
     const formData = new FormData();
-    formData.append("video", selectedFile);
+    formData.append("video", file);
 
-    // setIsLoading(true);
     try {
       const response = await fetch("http://localhost:5001/upload", {
         method: "POST",
         body: formData,
       });
 
+      const result = await response.json();
       if (response.ok) {
-        const result = await response.json();
-        alert("Upload successful: " + result.message);
+        // callback to remove file name from uploadingFiles
+        removeFileFromUploading(file.name);
+        console.log(file.name, " is successfully uploaded!");
       } else {
-        alert("Upload failed");
+        console.error(`${file.name} upload failed`);
       }
     } catch (error) {
-      console.error("Error uploading the file", error);
-      alert("Error uploading the file");
+      console.error(`Error uploading ${file.name}:`, error);
     }
-    // setIsLoading(false);
+  };
+
+  const handleUpload = () => {
+    if (selectedFiles.length === 0) {
+      alert("Please select files first!");
+      return;
+    }
+    setUploadingFiles(selectedFiles.map((file) => file.name));
+
+    selectedFiles.forEach((file) => {
+      uploadFile(file);
+    });
+    // clear the selected files list once the upload begins
+    setSelectedFiles([]);
+  };
+
+  const removeFileFromUploading = (fileName) => {
+    setUploadingFiles((currentUploadingFiles) =>
+      currentUploadingFiles.filter((name) => name !== fileName)
+    );
   };
 
   const handleKeywordsChange = (event) => {
@@ -109,9 +124,45 @@ function App() {
         <div></div>
       </header>
 
-      <input type="file" onChange={handleFileChange} accept="video/*" />
-      <button onClick={handleUpload}>Upload Video</button>
-      {fileName && <p>Selected file: {fileName}</p>}
+      <div className="upload-box">
+        <div className="file-status-display">
+          {/* list of files that have been selected but not yet uploaded */}
+          {selectedFiles.length > 0 && (
+            <div className="selected-files-list">
+              {selectedFiles.map((file, index) => (
+                <div key={index} className="selected-uploading-item">
+                  {file.name}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* list of files being uploaded with spinners */}
+          {uploadingFiles.length > 0 && (
+            <div className="uploading-list">
+              {uploadingFiles.map((fileName, index) => (
+                <div key={index} className="selected-uploading-item">
+                  {fileName}
+                  <div className="uploading-spinner"></div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="select-upload-wrapper">
+          <button onClick={() => fileInputRef.current.click()}>Select</button>
+          <input
+            type="file"
+            multiple
+            onChange={handleFileChange}
+            accept="video/*"
+            style={{ display: "none" }}
+            ref={fileInputRef}
+          />
+          <button onClick={handleUpload}>Upload</button>
+        </div>
+      </div>
 
       <div className="search-box">
         <div className="search-bar">
