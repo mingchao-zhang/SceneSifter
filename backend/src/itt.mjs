@@ -48,7 +48,7 @@ export default async function vid2imgDesc(videoPath, interval) {
 
     const files = fs.readdirSync(imgDir);
     if (files.length == 0) {
-        return new Error('no image extracted');
+        throw new Error('no image extracted');
     }
 
     let results = [];
@@ -65,11 +65,14 @@ export default async function vid2imgDesc(videoPath, interval) {
                 }
                 results.push(entry);    // thread safe?
             } else {
-                errors.push(`Error describing image at ${start}s: ${response}`);
+                errors.push(`Video ${videoName}: Error describing image at ${start}s: ${JSON.stringify(response)}`);
             }
             return;
         })
-        .catch(err => err)
+        .catch(err => {
+            console.error(err);
+            throw err;
+        })
     );
 
     await Promise.all(tasks);
@@ -77,8 +80,8 @@ export default async function vid2imgDesc(videoPath, interval) {
     if (errors.length > 0) {
         console.log(errors);
     }
-    if (errors.length == files.length) {
-        return new Error('image2text failed');
+    if (errors.length == files.length || results.length == 0) {
+        throw new Error(`Video ${videoName}: image2text failed`);
     }
     return results;
 }

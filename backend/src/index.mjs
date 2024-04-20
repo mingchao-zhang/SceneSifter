@@ -65,28 +65,29 @@ app.post('/upload', upload.single('video'), (req, res) => {
     pgService.insert(sentences, 'speech', (e, v) => {
       chatService.addToContext(allText);
       console.log(chatService.context)
-      console.log('speech info inserted');
+      console.log(`Video ${req.file.originalname}: speech info inserted`);
       return;
     })
   }); // TODO: catch potential error?
-  Promise.all([stt]).then(() => res.json({ message: `${req.file.originalname}` }));
+  // Promise.all([stt]).then(() => res.json({ message: `${req.file.originalname}` }));
 
-  // const itt = vid2imgDesc(videoPath, 5).then(entries => {
-  //   for (const entry of entries) {
-  //     entry['video_name'] = req.file.originalname;
-  //     entry['description'] = entry['description'].replace(/'/g, "''");
-  //   }
+  const itt = vid2imgDesc(videoPath, 5).then(entries => {
+    console.log(`Video ${req.file.originalname}: Inserting image info... ${entries}`);
+    for (const entry of entries) {
+      entry['video_name'] = req.file.originalname;
+      entry['description'] = entry['description'].replace(/'/g, "''");
+    }
 
-  //   pgService.insert(entries, 'image', (e, v) => {
-  //     console.log('image info inserted');
-  //     return;
-  //   });
-  // }).catch(err => { 
-  //   console.error(err); 
-  //   throw err;
-  // });
+    pgService.insert(entries, 'image', (e, v) => {
+      console.log(`Video ${req.file.originalname}: image info inserted`);
+      return;
+    });
+  }).catch(err => { 
+    console.error(err); 
+    return;
+  });
 
-  // Promise.all([stt, itt]).then(() => res.json({ message: `${req.file.originalname} uploaded successfully!` }));
+  Promise.all([stt, itt]).then(() => res.json({ message: `${req.file.originalname} uploaded successfully!` }));
 });
 
 
