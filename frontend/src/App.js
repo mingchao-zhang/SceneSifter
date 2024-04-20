@@ -4,9 +4,9 @@ import "./App.css";
 function App() {
   const fileInputRef = useRef(null);
   // store file objects
-  const [selectedFiles, setSelectedFiles] = useState([]); 
+  const [selectedFiles, setSelectedFiles] = useState([]);
   // just store the file names
-  const [uploadingFiles, setUploadingFiles] = useState([]); 
+  const [uploadingFiles, setUploadingFiles] = useState([]);
   const [videoData, setVideoData] = useState([]);
   const videoRefs = useRef(new Map());
   const [keywords, setKeywords] = useState("");
@@ -35,7 +35,7 @@ function App() {
       if (response.ok) {
         // callback to remove file name from uploadingFiles
         removeFileFromUploading(file.name);
-        console.log(file.name, " is successfully uploaded!")
+        console.log(file.name, " is successfully uploaded!");
       } else {
         console.error(`${file.name} upload failed`);
       }
@@ -125,37 +125,43 @@ function App() {
       </header>
 
       <div className="upload-box">
-      <button onClick={() => fileInputRef.current.click()}>Select Videos</button>
-      <input
-        type="file"
-        multiple
-        onChange={handleFileChange}
-        accept="video/*"
-        style={{ display: 'none' }}
-        ref={fileInputRef}
-      />
-      <button onClick={handleUpload}>Upload Videos</button>
-
-      {/* list of files that have been selected but not yet uploaded */}
-      {selectedFiles.length > 0 && (
-        <div className="selected-files-list">
-          {selectedFiles.map((file, index) => (
-            <div key={index}>{file.name}</div>
-          ))}
-        </div>
-      )}
-
-      {/* list of files being uploaded with spinners */}
-      {uploadingFiles.length > 0 && (
-        <div className="uploading-list">
-          {uploadingFiles.map((fileName, index) => (
-            <div key={index} className="uploading-item">
-              {fileName}
-              <div className="uploading-spinner"></div>
+        <div className="file-status-display">
+          {/* list of files that have been selected but not yet uploaded */}
+          {selectedFiles.length > 0 && (
+            <div className="selected-files-list">
+              {selectedFiles.map((file, index) => (
+                <div key={index} className="selected-uploading-item">
+                  {file.name}
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+
+          {/* list of files being uploaded with spinners */}
+          {uploadingFiles.length > 0 && (
+            <div className="uploading-list">
+              {uploadingFiles.map((fileName, index) => (
+                <div key={index} className="selected-uploading-item">
+                  {fileName}
+                  <div className="uploading-spinner"></div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+
+        <div className="select-upload-wrapper">
+          <button onClick={() => fileInputRef.current.click()}>Select</button>
+          <input
+            type="file"
+            multiple
+            onChange={handleFileChange}
+            accept="video/*"
+            style={{ display: "none" }}
+            ref={fileInputRef}
+          />
+          <button onClick={handleUpload}>Upload</button>
+        </div>
       </div>
 
       <div className="search-box">
