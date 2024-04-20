@@ -196,3 +196,24 @@ body {
     transform: rotate(360deg);
   }
 }
+
+.uploading-list {
+  margin-top: 20px;
+  padding-left: 20px;
+}
+
+.uploading-item {
+  margin-bottom: 10px;
+  align-items: center;
+  display: flex;
+}
+
+.uploading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 4px solid rgba(0,0,0,0.1);
+  border-radius: 50%;
+  border-left-color: #09f;
+  margin-left: 10px;
+  animation: spin 1s linear infinite;
+}
