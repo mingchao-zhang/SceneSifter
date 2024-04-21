@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as pv from './process_video.mjs';
 import PropertiesReader from "properties-reader";
+import { pipeline } from '@xenova/transformers';
 
 // get the current directory
 import { dirname } from 'path';
@@ -24,6 +25,12 @@ async function img2text(filename) {
         }
     );
     const result = await response.json();
+    return result;
+}
+
+async function img2text_transformer(filename) {
+    const ittPipe = await pipeline('image-to-text');
+    const result = await ittPipe(filename);
     return result;
 }
 
