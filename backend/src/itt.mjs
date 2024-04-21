@@ -44,7 +44,7 @@ export default async function vid2imgDesc(videoPath, interval) {
     let imgDir = `tmp/${videoName}/imgs`;
     
     await pv.extractFrames(videoPath, interval, imgDir);
-    console.log(videoPath, ": successfully extracted frames");
+    console.log(videoName, ": successfully extracted frames");
 
     const files = fs.readdirSync(imgDir);
     if (files.length == 0) {

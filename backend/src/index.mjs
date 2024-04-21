@@ -69,10 +69,9 @@ app.post('/upload', upload.single('video'), (req, res) => {
       return;
     })
   }); // TODO: catch potential error?
-  // Promise.all([stt]).then(() => res.json({ message: `${req.file.originalname}` }));
 
   const itt = vid2imgDesc(videoPath, 5).then(entries => {
-    console.log(`Video ${req.file.originalname}: Inserting image info... ${entries}`);
+    console.log(`Video ${req.file.originalname}: Inserting image info...`);
     for (const entry of entries) {
       entry['video_name'] = req.file.originalname;
       entry['description'] = entry['description'].replace(/'/g, "''");
