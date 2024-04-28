@@ -1,5 +1,20 @@
 # SceneSifter
 
+### Backend
+
+To run the backend code:
+    ```
+    cd backend
+    npm start
+    ```
+    
+### Frontend
+
+To run the frontend code:
+    ```
+    cd frontend
+    npm start
+    ```
 
 ### PostgreSQL
 
@@ -23,7 +38,15 @@
     docker exec -it postgres psql -U postgres -c '\i /home/video_listing.sql'
     ```
 
+### ChatGpt
 
+For the privacy and safety reason, we didn't put our chatgpt key in the config file. To enable the chatgpt service, you need to pop in your own OpenAI key.
+
+In the SceneSifter/backend/src/application.properties.ini file, set
+    ``` 
+    CHATGPT_API_KEY = YOUR_OWN_KEY
+    ```
+    
 ### Vosk (STT model)
 Download a model (I tried with `vosk-model-en-us-0.22-lgraph`) from https://alphacephei.com/vosk/models and unpack as `stt_model` in the current folder.
 
