@@ -32,13 +32,12 @@ SceneSifter is a prototype for interactive video information extraction and retr
 
 ## Prerequisite
 ### Install FFmpeg
-FFmpeg is required for the speech-to-text translation. Download and install it from https://ffmpeg.org/download.html
+FFmpeg is required for audio & frame extraction. Download and install it from https://ffmpeg.org/download.html
 
 
-### Install Vosk
-We used `vosk-model-en-us-0.22-lgraph` for the speech-to-text translation. To use a different vosk model, download one from https://alphacephei.com/vosk/models and unpack into a `model` folder under [backend/](backend/).
+### Select a Vosk model for speech recognition
+We used `vosk-model-en-us-0.22-lgraph`. To use a different Vosk model, download one from https://alphacephei.com/vosk/models and unpack it in [backend/model/](backend/model/) to overwrite the current one.
 
-<!-- Install Vosk with `npm intall vosk` -->
 
 ### Setup PostgreSQL
 1. Launch a Postgres instance using the docker image with pgvector:
