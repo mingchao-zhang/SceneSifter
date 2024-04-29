@@ -71,17 +71,29 @@ HUGGINGFACE_TOKEN=<your own key>
 
 ## Usage
 To run the backend code:
-    ```
-    cd backend
-    npm start
-    ```
+```
+cd backend
+npm start
+```
 
 To run the frontend code:
-    ```
-    cd frontend
-    npm start
-    ```
+```
+cd frontend
+npm start
+```
 
+## Example videos
+| File  | Length | Description | 
+| ------------- | ------------- | ----------- |
+| 2010_elevator_Pitch_Winner.mp4|  1m15s | An elevator pitch |
+| children_new_billionaires.mp4  | 2m27s  | A short documentary featuring some self-introductions |
+| Garr_Reynolds_Introduction.mp4 | 1m03s | A self introduction |
+| Matthew_introduction.mp4 | 1m07s | A self introduction |
+| ted_talk.mp4 | 1m20s | A Ted Talk clip |
+| ted_youth_unemployment.mp4 | 1m12s | A Ted Talk clip |
+| tokyo1.mp4 | 2m01s | The best of Tokyo2020 compilation |
+| tokyo2.mp4 | 2m01s | The best of Tokyo2020 compilation |
+| tokyo3.mp4 | 2m01s | The best of Tokyo2020 compilation |
 
 
 ## References
