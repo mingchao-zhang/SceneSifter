@@ -1,6 +1,12 @@
 # SceneSifter
 SceneSifter is a prototype for interactive video information extraction and retrieval, designed to help content creators organize and search video clips. Leveraging speech-to-text, image-to-text, text-to-vector, and vector similarity search technologies, it processes user-supplied videos and returns clickable relevant timestamps from those videos given a fuzzy search request. 
 
+## Architecture
+![overall workflow](/images/overall_workflow.png)
+
+## Example
+![front end](/images/frontend.png)
+
 ## Directory Structure
 ```
 ├── backend
@@ -17,6 +23,7 @@ SceneSifter is a prototype for interactive video information extraction and retr
 │   ├── package.json
 ├── example_videos    # Videos used for testing
 ├── frontend          # React App
+├── images            # images for README.md
 ├── sql
 │   ├── video_listing.sql       # Database creation
 │   ├── video_embedding.csv     # Some dummy data
@@ -56,7 +63,7 @@ We used `vosk-model-en-us-0.22-lgraph` for the speech-to-text translation. To us
 
 ### Setup remote API keys
 
-Out of safety concerns, we didn't put our OpenAI key in the config file. To enable the ChatGPT service, you need to pop in your own OpenAI key.
+Out of safety concerns, we didn't put our [OpenAI key](https://platform.openai.com/) in the config file. To enable the ChatGPT service, you need to manually add your own OpenAI key.
 
 In `backend/src/application.properties.ini`, set
 ``` 
