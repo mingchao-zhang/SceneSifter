@@ -54,7 +54,7 @@ We used `vosk-model-en-us-0.22-lgraph` for the speech-to-text translation. To us
     docker exec -it postgres psql -U postgres -c '\i /home/video_listing.sql'
     ```
 
-### Setup service keys
+### Setup remote API keys
 
 Out of safety concerns, we didn't put our OpenAI key in the config file. To enable the ChatGPT service, you need to pop in your own OpenAI key.
 
