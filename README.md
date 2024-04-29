@@ -25,7 +25,13 @@ SceneSifter is a prototype for interactive video information extraction and retr
 
 ## Prerequisite
 ### Install FFmpeg
-https://ffmpeg.org/download.html
+FFmpeg is required for the speech-to-text translation. Download and install it from https://ffmpeg.org/download.html
+
+
+### Install Vosk
+We used `vosk-model-en-us-0.22-lgraph` for the speech-to-text translation. To use a different vosk model, download one from https://alphacephei.com/vosk/models and unpack into a `model` folder under [backend/](backend/).
+
+<!-- Install Vosk with `npm intall vosk` -->
 
 ### Setup PostgreSQL
 1. Launch a Postgres instance using the docker image with pgvector:
@@ -47,14 +53,8 @@ https://ffmpeg.org/download.html
     ```
     docker exec -it postgres psql -U postgres -c '\i /home/video_listing.sql'
     ```
-    
-### Vosk
-Download a model (I tried with `vosk-model-en-us-0.22-lgraph`) from https://alphacephei.com/vosk/models and unpack as `model` under `backend/`.
 
-Install Vosk with `npm intall vosk`
-
-
-### Setup API keys
+### Setup service keys
 
 Out of safety concerns, we didn't put our OpenAI key in the config file. To enable the ChatGPT service, you need to pop in your own OpenAI key.
 
@@ -73,12 +73,14 @@ HUGGINGFACE_TOKEN=<your own key>
 To run the backend code:
 ```
 cd backend
+npm i
 npm start
 ```
 
 To run the frontend code:
 ```
 cd frontend
+npm i
 npm start
 ```
 
