@@ -1,6 +1,12 @@
 # SceneSifter
 SceneSifter is a prototype for interactive video information extraction and retrieval, designed to help content creators organize and search video clips. Leveraging speech-to-text, image-to-text, text-to-vector, and vector similarity search technologies, it processes user-supplied videos and returns clickable relevant timestamps from those videos given a fuzzy search request. 
 
+## Architecture
+![overall workflow](/images/overall_workflow.png)
+
+## Example
+![front end](/images/frontend.png)
+
 ## Directory Structure
 ```
 ├── backend
@@ -17,6 +23,7 @@ SceneSifter is a prototype for interactive video information extraction and retr
 │   ├── package.json
 ├── example_videos    # Videos used for testing
 ├── frontend          # React App
+├── images            # images for README.md
 ├── sql
 │   ├── video_listing.sql       # Database creation
 │   ├── video_embedding.csv     # Some dummy data
@@ -25,7 +32,12 @@ SceneSifter is a prototype for interactive video information extraction and retr
 
 ## Prerequisite
 ### Install FFmpeg
-https://ffmpeg.org/download.html
+FFmpeg is required for audio & frame extraction. Download and install it from https://ffmpeg.org/download.html
+
+
+### Select a Vosk model for speech recognition
+We used `vosk-model-en-us-0.22-lgraph`. To use a different Vosk model, download one from https://alphacephei.com/vosk/models and unpack it in [backend/model/](backend/model/) to overwrite the current one.
+
 
 ### Setup PostgreSQL
 1. Launch a Postgres instance using the docker image with pgvector:
@@ -47,16 +59,10 @@ https://ffmpeg.org/download.html
     ```
     docker exec -it postgres psql -U postgres -c '\i /home/video_listing.sql'
     ```
-    
-### Vosk
-Download a model (I tried with `vosk-model-en-us-0.22-lgraph`) from https://alphacephei.com/vosk/models and unpack as `model` under `backend/`.
 
-Install Vosk with `npm intall vosk`
+### Setup remote API keys
 
-
-### Setup API keys
-
-Out of safety concerns, we didn't put our OpenAI key in the config file. To enable the ChatGPT service, you need to pop in your own OpenAI key.
+Out of safety concerns, we didn't put our [OpenAI key](https://platform.openai.com/) in the config file. To enable the ChatGPT service, you need to manually add your own OpenAI key.
 
 In `backend/src/application.properties.ini`, set
 ``` 
@@ -73,12 +79,14 @@ HUGGINGFACE_TOKEN=<your own key>
 To run the backend code:
 ```
 cd backend
+npm i
 npm start
 ```
 
 To run the frontend code:
 ```
 cd frontend
+npm i
 npm start
 ```
 
