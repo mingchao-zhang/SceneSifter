@@ -4,8 +4,8 @@ import path from 'path';
 import cors from 'cors';
 import fs from 'fs';
 
-import getTranscription from './stt.mjs'; // speech to text
-import vid2imgDesc from './itt.mjs'; // vid to img to text
+import getTranscription from './speech_to_text.mjs'; // speech to text
+import vid2imgDesc from './image_to_text.mjs'; // vid to img to text
 
 const app = express();
 const port = 5001;

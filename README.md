@@ -15,10 +15,10 @@ SceneSifter is a prototype for interactive video information extraction and retr
 │   │   ├── application.properties.ini    # Properties
 │   │   ├── chatgpt.mjs             # ChatGPT service
 │   │   ├── index.mjs    
-│   │   ├── itt.mjs                 # Image-to-text conversion
+│   │   ├── image_to_text.mjs       # Image-to-text conversion
 │   │   ├── postgres_service.mjs    # Postgres service
 │   │   ├── process_video.mjs       # Audio extraction, frame extraction, etc.
-│   │   ├── stt.mjs                 # Speech-to-text conversion
+│   │   ├── speech_to_text.mjs       # Speech-to-text conversion
 │   ├── uploaded_videos        # User-uploaded videos
 │   ├── package.json
 ├── example_videos    # Videos used for testing
