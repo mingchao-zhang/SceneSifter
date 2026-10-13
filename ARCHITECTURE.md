@@ -65,22 +65,22 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    Browser[React frontend] -->|1. Submit question ending in ?| API[POST /query]
-    API -->|2. Send question| Chat[OpenAI gpt-3.5-turbo-0125]
-    Context[Accumulated speech transcripts] -->|2. Include transcript context| Chat
-    Chat -->|3. Embed short answer| Embed[Nomic text embedding]
-    Embed -->|4. Rank by vector distance| Search[pgvector nearest-neighbor search]
-    Search -->|5. Return top matching intervals| Results[Top matching intervals]
-    Results -->|6. Display matching videos and timestamps| Browser
-    Browser -->|7. Select timestamp and seek| Video[Seek in uploaded video]
+    Step1["1. Submit question<br/>React -> POST /query"] --> Step2["2. Ask OpenAI with speech transcript context<br/>gpt-3.5-turbo-0125"]
+    Step2 --> Step3["3. Embed the short answer<br/>Nomic Embed Text v1.5"]
+    Step3 --> Step4["4. Find nearest intervals<br/>pgvector"]
+    Step4 --> Step5["5. Return top matching intervals"]
+    Step5 --> Step6["6. Display matching videos and timestamps<br/>React frontend"]
+    Step6 --> Step7["7. Select timestamp and seek<br/>Uploaded video"]
 ```
+
+**Transcript context:** The backend does not rebuild this context from PostgreSQL when a question arrives. During each upload, recognized speech is concatenated and appended to `ChatService`'s in-memory context; a later question sends that accumulated text to OpenAI. It is not persisted as a single context and is lost when the backend restarts. It currently combines speech from all uploaded videos, not image captions.
 
 1. The frontend sends `POST /query` with JSON `{ "keywords": "..." }`.
 2. If the search text ends with `?`, `ChatService` sends the question and its accumulated transcript context to OpenAI and uses the returned short answer as the search text. Otherwise, the original keywords are used directly.
 3. `PostgresService.search` embeds that text with Nomic and orders rows by pgvector's `<=>` distance operator. The query returns up to five intervals and calculates `similarity` as `1 - distance`.
 4. The API groups matching intervals by video name and returns video URLs, timestamps, and descriptions. The frontend displays the videos and matching moments; selecting a timestamp seeks the corresponding player.
 
-The visual captions are indexed and searchable, but are not included in the context sent to ChatGPT. The chat context is an in-memory string of speech transcripts accumulated as videos are uploaded; it is not persisted or separated by video.
+The visual captions are indexed and searchable, but are not included in the context sent to ChatGPT.
 
 ## Data Storage
 
