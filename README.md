@@ -107,3 +107,23 @@ npm start
 ## References
 * Header background image: <a href="https://stocksnap.io/photo/colorful-bokeh-FSOBBNPKKZ">Photo</a> by <a href="https://stocksnap.io/author/hdwallpapers">HD Wallpapers</a> on <a href="https://stocksnap.io">StockSnap</a>
 * [TV icon](https://pixabay.com/illustrations/tv-ancient-appliance-retro-screen-7794355/)
+
+## RAG Improvement
+
+The current question workflow sends OpenAI the accumulated speech transcripts from memory. A potential improvement is retrieval-augmented generation (RAG): split each transcript into smaller, optionally overlapping chunks during video upload, and store each chunk with its embedding and video/timestamp metadata. When a question arrives, embed it with the same text-embedding model, retrieve the 50 most relevant chunks, and send the original question plus those chunks to OpenAI. This gives the model focused evidence instead of the full transcript collection. The chunk size, overlap, and number retrieved should be tuned against real searches.
+
+```mermaid
+flowchart LR
+    Video[Uploaded video] --> Speech[Speech-to-text transcript]
+    Speech --> Chunks[Split into small transcript chunks<br/>Keep video and timestamp metadata]
+    Chunks --> ChunkEmbedding[Embed each chunk<br/>Nomic Embed Text v1.5]
+    ChunkEmbedding --> Store[(pgvector store<br/>Chunk text, vector, video, timestamps)]
+
+    Question[User question] --> QueryEmbedding[Embed question<br/>Same Nomic model]
+    QueryEmbedding --> Retrieve[Retrieve top 50 relevant chunks]
+    Store --> Retrieve
+    Question --> Prompt[Build prompt<br/>Original question + retrieved chunks]
+    Retrieve --> Prompt
+    Prompt --> OpenAI[OpenAI chat model]
+    OpenAI --> Answer[Grounded answer<br/>with supporting video timestamps]
+```
